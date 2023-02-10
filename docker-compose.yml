@@ -1,0 +1,13 @@
+version: '3.9'
+
+services:
+
+  mono-ep-kernel:
+    container_name: mono-ep-kernel
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - '80:3000'

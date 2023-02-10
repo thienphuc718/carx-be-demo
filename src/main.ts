@@ -26,7 +26,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .addBearerAuth()
-    .setTitle('CarX BE API document')
+    .setTitle('CarX BE API document ')
     .setDescription('CarX API')
     .setVersion('1.0')
     .build();

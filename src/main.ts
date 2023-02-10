@@ -11,7 +11,11 @@ async function bootstrap() {
     logger: ['verbose', 'debug'],
   });
 
-  app.enableCors();
+  app.enableCors(
+    {
+      origin: ['https://carx-admin-demo.vercel.app/'],
+    }
+  );
   app.setGlobalPrefix('/api');
   app.useGlobalPipes(
     new ValidationPipe({

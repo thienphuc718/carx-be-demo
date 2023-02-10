@@ -1,0 +1,9 @@
+export enum FlashBuyResponseStatusEnum {
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+}
+
+export enum FlashBuyActionEnum {
+  CREATE_FLASH_BUY_REQUEST = 'CREATE_FLASH_BUY_REQUEST',
+  CREATE_FLASH_BUY_RESPONSE = 'CREATE_FLASH_BUY_RESPONSE',
+}

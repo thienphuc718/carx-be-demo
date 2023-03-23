@@ -5,6 +5,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './AppModule';
 import { HttpExceptionFilter } from './exceptions/ExceptionHttp';
+import * as cors from 'cors';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -44,7 +45,8 @@ async function bootstrap() {
   // }
 
   const configService: ConfigService = app.get(ConfigService);
-  const port: number = configService.get<number>('PORT') || 3000;
+  const port: number = configService.get<number>('PORT') || 1002;
+  // app.use(cors());
   await app.listen(port, () => console.log(`Listening on port ${port}`));
 }
 bootstrap();

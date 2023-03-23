@@ -42,6 +42,10 @@ export class FilterDealDto {
   product_id?: string;
 
   @IsOptional()
+  @IsUUID(4)
+  service_id?: string;
+
+  @IsOptional()
   @IsString()
   title?: string;
 }
@@ -60,12 +64,16 @@ export class DealEntityDto {
   product_id: string;
 
   @IsOptional()
+  @IsUUID(4)
+  service_id: string;
+
+  @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => [true, 'true'].indexOf(value) > -1)
   is_hot_deal?: boolean;
 }
 
-export class CreateDealDto extends DealEntityDto {}
+export class CreateDealDto extends DealEntityDto { }
 
 export class UpdateDealDto extends PartialType(
   OmitType(DealEntityDto, [] as const),
@@ -81,4 +89,8 @@ export class UpdateDealDto extends PartialType(
   @IsOptional()
   @IsUUID(4)
   product_id?: string;
+
+  @IsOptional()
+  @IsUUID(4)
+  service_id?: string;
 }

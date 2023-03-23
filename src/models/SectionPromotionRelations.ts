@@ -11,6 +11,7 @@ import {
 } from 'sequelize-typescript';
 import { PromotionModel } from './Promotions';
 import { SectionModel } from './Sections';
+import { AgentModel } from './Agents';
 
 @Table({
   modelName: 'section_promotion_relations',

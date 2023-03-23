@@ -63,6 +63,7 @@ export { RoleFeatureRelationModel } from './RoleFeatureRelations';
 export { LikeModel } from './Likes';
 export { PopUpModel } from './PopUps';
 export { SliderModel } from './Sliders';
+export { CustomLocationModel } from './CustomLocations';
 export { SectionModel } from './Sections';
 export { SectionAgentRelationModel } from './SectionAgentRelations';
 export { SectionProductRelationModel } from './SectionProductRelations';
@@ -70,7 +71,6 @@ export { SectionDealRelationModel } from './SectionDealRelations';
 export { SectionPostRelationModel } from './SectionPostRelations';
 export { SectionPromotionRelationModel } from './SectionPromotionRelations';
 export { TransactionModel } from './Transactions';
-
 export { TrailerRescueRequestModel } from './TrailerRescueRequests';
 export { TrailerFormerRescueResponseModel } from './TrailerFormerRescueResponses';
 export { TrailerLaterRescueResponseModel } from './TrailerLaterRescueResponses';

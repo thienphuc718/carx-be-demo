@@ -29,6 +29,10 @@ export class SectionEntityDto {
   is_enabled?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  isnoticeable?: boolean;
+
+  @IsOptional()
   @IsObject()
   config?: SectionConfigDto;
 }
@@ -64,9 +68,13 @@ export class FilterSectionDto {
   @IsBoolean()
   @IsOptional()
   is_enabled?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  isnoticeable?: boolean;
 }
 
-export class UpdateSectionDto extends OmitType(SectionEntityDto, [] as const) {}
+export class UpdateSectionDto extends OmitType(SectionEntityDto, [] as const) { }
 
 export class UpdateSectionOrderDto {
   @Type(() => Number)

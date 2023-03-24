@@ -1,24 +1,28 @@
-#name: Staging Deployment Digital Ocean
-#
-#on:
-#  push:
-#    branches: [master]
-#
-#jobs:
-#  build:
-#    env:
-#      CARX_BE: ${{ secrets.CARX_BE }}
-#    runs-on: [self-hosted, master]
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v2
-#
-#      - name: Inject env
-#        run: echo "$CARX_BE" > .env
-#        shell: bash
-#
-#      - name: Run build
-#        run: docker-compose build
-#
-#      - name: Run up
-#        run: docker-compose up -d
+name: Testing
+
+on:
+ push:
+   branches: [master]
+ pull_request:
+   branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install packages
+        run: yarn
+
+      - name: Build project
+        run: yarn build

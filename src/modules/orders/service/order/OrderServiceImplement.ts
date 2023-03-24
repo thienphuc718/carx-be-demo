@@ -43,6 +43,7 @@ import {
 } from '../../../insurance-contracts/service/InsuranceContractServiceInterface';
 import {PaymentMethodEnum} from '../../enum/PaymentEnum';
 import {sumBy} from "lodash";
+import { TransactionStatusEnum } from '../../../transactions/enum/TransactionEnum';
 
 export class OrderServiceImplementation implements IOrderService {
   constructor(
@@ -434,6 +435,9 @@ export class OrderServiceImplementation implements IOrderService {
       if (payload.status) {
         switch (payload.status) {
           case OrderStatusEnum.PROCESSING:
+            if (!order.transaction || (order.transaction && order.transaction.status !== TransactionStatusEnum.SUCCEEDED) ) {
+              throw new Error('Order has not been paid successfully. Please wait until customer pays the bill');
+            }
             if (order.booking) {
               await this.notificationService.createUserInAppAndPushNotification(
                 {
@@ -454,7 +458,7 @@ export class OrderServiceImplementation implements IOrderService {
                   heading: `Đơn hàng #${updatedOrder.order_no}`,
                   targetGroup: NotificationSegmentEnum.CUSTOMER,
                   data: { order_id: updatedOrder.id },
-                  type: NotificationTypeEnum.AGENT_CONFIRM_BOOKING,
+                  type: NotificationTypeEnum.AGENT_CONFIRM_ORDER,
                   image: agent.avatar ?? null,
                 }
               );
@@ -520,7 +524,7 @@ export class OrderServiceImplementation implements IOrderService {
                   heading: `Đơn hàng #${updatedOrder.order_no}`,
                   targetGroup: NotificationSegmentEnum.AGENT,
                   data: { order_id: updatedOrder.id },
-                  type: NotificationTypeEnum.CUSTOMER_REPORT_BOOKING,
+                  type: NotificationTypeEnum.CUSTOMER_REPORT_ORDER,
                   image: customer.avatar ?? null,
                 }
               );
@@ -864,9 +868,12 @@ export class OrderServiceImplementation implements IOrderService {
         'Not enough point or Customer has used maximum point per day',
       );
     }
-    const maxUsablePoint = Math.floor(
-      preOrderValue / customerPointUsageConfiguration.apply_value,
-    );
+    let maxUsablePoint = 0;
+    if (customerPointUsageConfiguration.apply_value) {
+      maxUsablePoint = Math.floor(
+        preOrderValue / customerPointUsageConfiguration.apply_value,
+      );
+    }
     pointUsed =
       currentCustomerPoint < maxUsablePoint
         ? currentCustomerPoint
@@ -921,6 +928,9 @@ export class OrderServiceImplementation implements IOrderService {
     let currentCustomerPoint = customer.point;
     if (userPointAccumulateConfiguration.is_enabled) {
       if (!userPointAccumulateConfiguration.compare_value) {
+        return;
+      }
+      if (!userPointAccumulateConfiguration.apply_value) {
         return;
       }
       pointValue =

@@ -299,9 +299,15 @@ export class AgentModel extends Model<AgentModel> {
           });
         }
       }
+
+      // CONVERT MIN PRICE FROM QUERY SELECT
+      if (agent['min_price']) {
+        agent['min_price'] = Number(agent['min_price']);
+      } else {
+        agent['min_price'] = 0;
+      }
       return {
         ...agent,
-        min_price: 0,
         max_price: 999999999,
         products: productList,
         services: serviceList,

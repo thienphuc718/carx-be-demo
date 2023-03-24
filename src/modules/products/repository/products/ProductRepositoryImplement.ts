@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ProductModel, AgentModel } from '../../../../models';
+import { ProductModel } from '../../../../models';
 import {
   CreateProductAttributeSelectedEntityDto,
   CreateProductCategorySelectedEntityDto,
@@ -33,42 +33,41 @@ export class ProductRepositoryImplementation implements IProductRepository {
     @InjectModel(ProductVariantModel)
     private productVariantModel: typeof ProductVariantModel,
     private sequelize: Sequelize,
-  ) { }
+  ) {}
 
-  async findAllByCondition(
+  findAllByCondition(
     limit: number,
     offset: number,
     condition: any,
-    names?: string[],
-    order_by?: any,
+    order_by?: any, 
     order_type?: any,
   ): Promise<ProductModel[]> {
     if (!order_by) {
-      order_by = 'view_count'
+      order_by = 'updated_at'
     }
     if (!order_type) {
       order_type = 'desc'
     }
 
-    const { variantCondition, insuranceProductCondition, ...productCondition } = condition;
-    // let tsVectorSearchString = null;
-    // if (productCondition.name) {
-    //   tsVectorSearchString = getTextSearchString(productCondition.name);
-    //   console.log("TSVECTOR STRING: ", tsVectorSearchString);
-    //   productCondition.tsv_converted_name = {
-    //     [Op.match]: this.sequelize.fn('to_tsquery', tsVectorSearchString)
-    //   };
-    //   delete productCondition.name;
-    // }
-    const includeOptions: IncludeOptions[] = [
-      {
-        model: ProductCategorySelectedModel,
-        as: 'categories',
-        required: false,
-        where: { is_deleted: false },
-        attributes: ['category_id'],
-        include: [{ model: ServiceCategoryModel, as: 'category_details' }],
-      },
+    const { variantCondition, insuranceProductCondition,...productCondition } = condition;
+    let tsVectorSearchString =  null;
+    if (productCondition.name) {
+      tsVectorSearchString = getTextSearchString(productCondition.name);
+      console.log("TSVECTOR STRING: ", tsVectorSearchString);
+      productCondition.tsv_converted_name = {
+        [Op.match]: this.sequelize.fn('to_tsquery', tsVectorSearchString)
+      };
+      delete productCondition.name;
+    }
+    let includeOptions: IncludeOptions[] = [
+      // {
+      //   model: ProductCategorySelectedModel,
+      //   as: 'categories',
+      //   required: false,
+      //   where: { is_deleted: false },
+      //   attributes: ['category_id'],
+      //   include: [{ model: ServiceCategoryModel, as: 'category_details' }],
+      // },
       {
         model: ProductVariantModel,
         as: 'variants',
@@ -76,9 +75,10 @@ export class ProductRepositoryImplementation implements IProductRepository {
           ...variantCondition,
           is_deleted: false,
         },
+        separate: true,
+        limit: 1
       },
     ];
-
     if (condition.is_insurance_product) {
       includeOptions.push({
         model: InsuranceProductModel,
@@ -89,47 +89,34 @@ export class ProductRepositoryImplementation implements IProductRepository {
         }
       })
     }
-
-    if (names) {
-      const products = await this.productModel.findAll({
-        limit: limit,
-        offset: offset,
-        where: {
-          ...productCondition,
-          name: {
-            [Op.iLike]: { [Op.any]: names.map(name => `%${name}%`) },
-          }
-        },
-        include: includeOptions
-      });
-
-      // Calculate the match count for each product
-      const matchedProducts = products.map(product => {
-        const nameWords = product.name.toLowerCase().split(/\s+/);
-        const matchCount = names.reduce((count, name) => {
-          const nameWordsLowerCase = name.toLowerCase().split(/\s+/);
-          const matched = nameWordsLowerCase.filter(word => nameWords.includes(word));
-          return count + matched.length;
-        }, 0);
-        return { product, matchCount };
-      });
-
-      // Sort the matched products by match count
-      const sortedProducts = matchedProducts.sort((a, b) => b.matchCount - a.matchCount);
-
-      return sortedProducts.map(({ product }) => product);
-    }
-
-    const products = await this.productModel.findAll({
+    return this.productModel.findAll({
       limit: limit,
       offset: offset,
-      where: {
-        ...productCondition,
-      },
+      where: { ...productCondition },
       include: includeOptions,
+      attributes: {
+        include: [
+          [
+            this.sequelize.literal(`
+              (
+                 select coalesce(sum("order_items".quantity),0)
+                 from "order_items", "orders"
+                 where "order_items".is_deleted = false
+                   and "orders".is_deleted = false
+                   and "orders".status = 'COMPLETED'
+                   and "order_items".order_id = "orders".id
+                   and "order_items".product_id = "products".id
+              )
+            `),
+            'total_sold'
+          ]
+        ],
+      },
+      order: tsVectorSearchString ?
+        this.sequelize.literal(`ts_rank(products.tsv_converted_name, to_tsquery('${tsVectorSearchString}')) desc`)
+          :
+        [[order_by, order_type]],
     });
-
-    return products
   }
 
   findAllByConditionRandomlyOrdered(
@@ -174,24 +161,19 @@ export class ProductRepositoryImplementation implements IProductRepository {
     });
   }
 
-  async countByCondition(condition: any, names: string[]): Promise<number> {
-    const { variantCondition, insuranceProductCondition, ...productCondition } = condition;
-    // if (productCondition.name) {
-    //   const convertedSearchString = getTextSearchString(condition.name);
-    //   productCondition.tsv_converted_name = {
-    //     [Op.match]: this.sequelize.fn('to_tsquery', convertedSearchString)
-    //   };
-    //   delete productCondition.name;
-    // }
-    const count = await this.productModel.count({
+  countByCondition(condition: any): Promise<number> {
+    const { variantCondition, insuranceProductCondition ,...productCondition } = condition;
+    if (productCondition.name) {
+      const convertedSearchString = getTextSearchString(condition.name);
+      productCondition.tsv_converted_name = {
+        [Op.match]: this.sequelize.fn('to_tsquery', convertedSearchString)
+      };
+      delete productCondition.name;
+    }
+    return this.productModel.count({
       where: {
         ...productCondition,
         is_deleted: false,
-        ...(names && {
-          name: {
-            [Op.iLike]: { [Op.any]: names.map(name => `%${name}%`) },
-          },
-        }),
       },
       include: [
         {
@@ -208,12 +190,10 @@ export class ProductRepositoryImplementation implements IProductRepository {
           required: condition.is_insurance_product || false,
           where: {
             ...insuranceProductCondition,
-          },
-        },
-      ],
+          }
+        }
+      ]
     });
-
-    return count;
   }
 
   findById(id: string): Promise<ProductModel> {
@@ -222,7 +202,25 @@ export class ProductRepositoryImplementation implements IProductRepository {
         id,
         is_deleted: false,
       },
-      attributes: { exclude: ['brand_id'] },
+      attributes: {
+        include: [
+          [
+            this.sequelize.literal(`
+            (
+               select coalesce(sum("order_items".quantity),0)
+               from "order_items", "orders"
+               where "order_items".is_deleted = false
+                 and "orders".is_deleted = false
+                 and "orders".status = 'COMPLETED'
+                 and "order_items".order_id = "orders".id
+                 and "order_items".product_id = "products".id
+            )
+            `),
+            'total_sold'
+          ]
+        ],
+        exclude: ['brand_id']
+      },
       include: [
         {
           model: ProductBrandModel,
@@ -410,7 +408,7 @@ export class ProductRepositoryImplementation implements IProductRepository {
   }
 
   findAllByConditionV2(limit: number, offset: number, condition: any): Promise<ProductModel[]> {
-    let tsVectorSearchString = null;
+    let tsVectorSearchString =  null;
     if (condition.name) {
       tsVectorSearchString = getTextSearchString(condition.name);
       condition.tsv_converted_name = {

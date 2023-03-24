@@ -14,7 +14,7 @@ export class ServiceRepositoryImplementation implements IServiceRepository {
     @InjectModel(ServiceCategoryRelationModel)
     private serviceCategoryRelationModel: typeof ServiceCategoryRelationModel,
     private sequelize: Sequelize,
-  ) { }
+  ) {}
 
   findAll(): Promise<ServiceModel[]> {
     return this.serviceModel.findAll({
@@ -89,17 +89,20 @@ export class ServiceRepositoryImplementation implements IServiceRepository {
           where: {
             ...productCondition
           },
+          required: true,
           include: [
             {
               model: ProductVariantModel,
               where: { ...variantCondition, is_deleted: false },
+              separate: true,
+              limit: 1,
             },
           ],
         },
         {
           model: AgentModel,
           required: false,
-          attributes: ['id', 'longitude', 'latitude'],
+          attributes: ['id'],
         },
         {
           model: ServiceCategoryRelationModel,
@@ -116,7 +119,7 @@ export class ServiceRepositoryImplementation implements IServiceRepository {
       order: [
         tsVectorSearchString ?
           this.sequelize.literal(`ts_rank(services.tsv_converted_name, to_tsquery('${tsVectorSearchString}')) desc`)
-          :
+            :
           [order_by, order_type]],
     });
   }

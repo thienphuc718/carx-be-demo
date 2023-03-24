@@ -12,7 +12,7 @@ import {
 
 import { CreateAgentEntityDto } from '../dto/AgentDto';
 import { IAgentRepository } from './AgentRepositoryInterface';
-import {getTextSearchString, removeVietnameseTones} from "../../../helpers/stringHelper";
+import { getTextSearchString } from "../../../helpers/stringHelper";
 import { Sequelize } from "sequelize-typescript";
 
 @Injectable()
@@ -47,16 +47,19 @@ export class AgentRepositoryImplementation implements IAgentRepository {
       order_type = 'asc'
     }
 
+    const { is_verified, ...agentCondition } = condition;
+
     return this.agentModel.findAll({
       limit: limit,
       offset: offset,
       where: {
-        ...condition
+        ...agentCondition
       },
       include: [
         {
           model: UserModel,
           attributes: { exclude: ['password', 'token', 'otp_expiry_time', 'otp'] },
+          where: is_verified !== undefined ? { is_verified } : {},
           include: [
             {
               model: UserCompanyRelationsModel,
@@ -68,6 +71,26 @@ export class AgentRepositoryImplementation implements IAgentRepository {
           ]
         }
       ],
+      attributes: {
+        include: [
+          [
+            this.sequelize.literal(`(
+              select coalesce(min(price), 0)
+              from product_variants
+              where product_variants.product_id in
+                (
+                  select id
+                  from products
+                  where is_deleted = false                    
+                    and agent_id = "agents".id
+                 )
+              and product_variants.is_deleted = false
+              and product_variants.price > 0
+            )`),
+            'min_price'
+          ]
+        ]
+      },
       order: [
         tsVectorSearchString ?
           this.sequelize.literal(`ts_rank(agents.tsv_converted_name, to_tsquery('${tsVectorSearchString}')) desc`)
@@ -79,14 +102,16 @@ export class AgentRepositoryImplementation implements IAgentRepository {
   findAllWithoutPaging(
     condition?: any,
   ): Promise<AgentModel[]> {
+    const { is_verified, ...agentCondition } = condition;
     return this.agentModel.findAll({
       where: {
-        ...condition
+        ...agentCondition
       },
       include: [
         {
           model: UserModel,
           attributes: { exclude: ['password', 'token', 'otp_expiry_time', 'otp'] },
+          where: is_verified !== undefined ? { is_verified } : {},
           include: [
             {
               model: UserCompanyRelationsModel,
@@ -187,6 +212,26 @@ export class AgentRepositoryImplementation implements IAgentRepository {
         //   ],
         // },
       ],
+      attributes: {
+        include: [
+          [
+            this.sequelize.literal(`(
+              select coalesce(min(price), 0)
+              from product_variants
+              where product_variants.product_id in
+                (
+                  select id
+                  from products
+                  where is_deleted = false                    
+                    and agent_id = "agents".id
+                 )
+              and product_variants.is_deleted = false
+              and product_variants.price > 0
+            )`),
+            'min_price'
+          ]
+        ]
+      },
     });
   }
 
@@ -210,10 +255,19 @@ export class AgentRepositoryImplementation implements IAgentRepository {
       };
       delete condition.name;
     }
+    const { is_verified, ...agentCondition } = condition;
+
     return this.agentModel.count({
       where: {
-        ...condition
-      }
+        ...agentCondition
+      },
+      include: [
+        {
+          model: UserModel,
+          attributes: { exclude: ['password', 'token'] },
+          where: is_verified !== undefined ? { is_verified } : {},
+        }
+      ]
     })
   }
 
@@ -241,24 +295,45 @@ export class AgentRepositoryImplementation implements IAgentRepository {
   }
 
   whereRaw(limit: number, offset: number, condition?: any, rawCondition?: any): Promise<AgentModel[]> {
+    const { is_verified, ... agentCondition } = condition;
     return this.agentModel.findAll({
       limit: limit,
       offset: offset,
       where: {
         [Op.and]: [
-          condition,
+          agentCondition,
           this.sequelize.literal(rawCondition)
+        ]
+      },
+      attributes: {
+        include: [
+          [
+            this.sequelize.literal(`(
+              select coalesce(min(price), 0)
+              from product_variants
+              where product_variants.product_id in
+                (
+                  select id
+                  from products
+                  where is_deleted = false                    
+                    and agent_id = "agents".id
+                 )
+              and product_variants.is_deleted = false
+              and product_variants.price > 0
+            )`),
+            'min_price'
+          ]
         ]
       },
       include: [
         {
           model: UserModel,
           attributes: { exclude: ['password', 'token'] },
+          where: is_verified !== undefined ? { is_verified } : {},
           include: [
             {
               model: UserCompanyRelationsModel,
               as: 'companies',
-              required: false,
               attributes: ['company_id'],
               include: [{ model: CompanyModel, as: 'company_relations' }],
             },
@@ -270,10 +345,11 @@ export class AgentRepositoryImplementation implements IAgentRepository {
   }
 
   whereRawWithoutPagination(condition: any, rawCondition: any): Promise<AgentModel[]> {
+    const { is_verified, ...agentCondition } = condition;
     return this.agentModel.findAll({
       where: {
         [Op.and]: [
-          condition,
+          agentCondition,
           this.sequelize.literal(rawCondition),
         ]
       },
@@ -281,6 +357,7 @@ export class AgentRepositoryImplementation implements IAgentRepository {
         {
           model: UserModel,
           attributes: { exclude: ['password', 'token', 'otp_expiry_time', 'otp'] },
+          where: is_verified !== undefined ? { is_verified } : {},
           include: [
             {
               model: UserCompanyRelationsModel,
@@ -297,13 +374,21 @@ export class AgentRepositoryImplementation implements IAgentRepository {
   }
 
   countRaw(condition?: any, rawCondition?: any): any {
+    const { is_verified, ...agentCondition } = condition;
     return this.agentModel.count({
       where: {
         [Op.and]: [
-          condition,
+          agentCondition,
           this.sequelize.literal(rawCondition)
-        ]
-      }
+        ],
+      },
+      include: [
+        {
+          model: UserModel,
+          attributes: { exclude: ['password', 'token', 'otp_expiry_time', 'otp'] },
+          where: is_verified !== undefined ? { is_verified } : {},
+        }
+      ]
     })
   }
   findOneByCondition(condition: any): Promise<AgentModel> {

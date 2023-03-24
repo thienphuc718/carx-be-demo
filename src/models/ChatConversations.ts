@@ -70,10 +70,12 @@ export class ChatConversationModel extends Model<ChatConversationModel> {
     const data = {
       ...conversationDetail,
       last_message: messages[0],
-      number_of_messages: messages.length,
-      agent: agent,
-      customer: customer,
+      agent,
+      customer,
     };
+    if (data['number_of_messages']) {
+      data['number_of_messages'] = Number(data['number_of_messages']);
+    }
     return data;
   }
 }

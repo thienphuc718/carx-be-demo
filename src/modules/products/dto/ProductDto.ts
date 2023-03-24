@@ -43,7 +43,7 @@ export class FilterListProductDto extends PaginationDto {
 
   @IsOptional()
   @IsString()
-  name?: string | string[];
+  name?: string;
 
   @IsOptional()
   @IsString()
@@ -132,7 +132,7 @@ export class ProductEntityDto {
   @IsOptional()
   name?: string;
 
-  @Transform(({ value }) => [true, 'true'].indexOf(value) > -1)
+  @Transform(({ value }) => [true,'true'].indexOf(value) > -1)
   @IsOptional()
   @IsBoolean()
   is_variable?: boolean;
@@ -300,7 +300,7 @@ export class CreateProductEntityDto extends OmitType(ProductEntityDto, [
   'is_deleted',
   'created_at',
   'updated_at',
-] as const) { }
+] as const) {}
 
 export class CreateProductPayloadDto extends OmitType(ProductPayloadDto, [
   'id',

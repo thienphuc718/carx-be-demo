@@ -5,11 +5,11 @@ import * as Models from '../../models/';
 const sequelizeModule = SequelizeModule.forRootAsync({
   useFactory: () => ({
     dialect: 'postgres',
-    username: `postgres`,
-    password: `thienphuc718`,
-    database: `carx_be_demo`,
-    host: `localhost`,
-    port: 5432,
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     models: Object.values(Models),
     // synchronize: true,
     // autoLoadModels: true,
@@ -25,4 +25,4 @@ const sequelizeModule = SequelizeModule.forRootAsync({
 @Module({
   imports: [sequelizeModule],
 })
-export class DatabaseModule { }
+export class DatabaseModule {}

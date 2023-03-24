@@ -62,7 +62,6 @@ export class ServiceModel extends Model<ServiceModel> {
   })
   product_id: string;
 
-  @ForeignKey(() => AgentModel)
   @Column({
     type: DataType.UUID,
   })
@@ -140,7 +139,6 @@ export class ServiceModel extends Model<ServiceModel> {
       price: variant.price,
       discount_price: variant.discount_price,
       code: variant.sku,
-      agent_details: service.agent_details,
       // currency_unit: product.currency_unit,
       agent_id: service.agent_details.id,
       status: product.status,
@@ -155,7 +153,7 @@ export class ServiceModel extends Model<ServiceModel> {
       updated_at: service.updated_at,
       categories: service.categories,
       product_id: service.product_id,
-    };
+    };    
     return data;
   }
 }

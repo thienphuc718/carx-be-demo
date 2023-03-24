@@ -37,3 +37,5 @@ lerna-debug.log*
 .env
 
 storage/reports/*.xlsx
+
+env

@@ -111,7 +111,7 @@ export class ReviewServiceImplementation implements IReviewService {
             heading: `Đơn hàng #${order.order_no}`,
             targetGroup: NotificationSegmentEnum.AGENT,
             data: { order_id: order.id },
-            type: NotificationTypeEnum.CUSTOMER_REVIEW_BOOKING,
+            type: NotificationTypeEnum.CUSTOMER_REVIEW_ORDER,
             image: customer.avatar ?? null,
           }
         );

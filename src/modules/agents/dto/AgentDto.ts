@@ -86,6 +86,11 @@ export class FilterAgentDto {
   @IsOptional()
   @IsBoolean()
   is_hidden?: boolean;
+
+  @Transform(({ value }) => [true, 'true'].indexOf(value) > -1)
+  @IsOptional()
+  @IsBoolean()
+  is_verified?: boolean;
 }
 
 export class AgentPaymentMethodDto {

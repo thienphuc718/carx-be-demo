@@ -4,11 +4,12 @@ import { SectionAgentRelationQueryConditionType } from '../type/SectionAgentRela
 import { ISectionAgentRelationRepository } from './SectionAgentRelationRepositoryInterface';
 
 export class SectionAgentRelationRepositoryImplementation
-  implements ISectionAgentRelationRepository {
+  implements ISectionAgentRelationRepository
+{
   constructor(
     @InjectModel(SectionAgentRelationModel)
     private sectionAgentRelationModel: typeof SectionAgentRelationModel,
-  ) { }
+  ) {}
   findAllByCondition(
     condition: SectionAgentRelationQueryConditionType,
   ): Promise<SectionAgentRelationModel[]> {
@@ -20,7 +21,7 @@ export class SectionAgentRelationRepositoryImplementation
         {
           model: AgentModel,
           as: 'agent',
-          attributes: ['name', 'avatar', 'longitude', 'latitude']
+          attributes: ['name', 'avatar']
         }
       ],
       order: [['order', 'asc']],

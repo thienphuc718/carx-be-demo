@@ -5,7 +5,6 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './AppModule';
 import { HttpExceptionFilter } from './exceptions/ExceptionHttp';
-import * as cors from 'cors';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -25,9 +24,10 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  const config = new DocumentBuilder()
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
     .addBearerAuth()
-    .setTitle('CarX BE API document ')
+    .setTitle('CarX BE API document')
     .setDescription('CarX API')
     .setVersion('1.0')
     .build();
@@ -40,13 +40,10 @@ async function bootstrap() {
       persistAuthorization: true,
     },
   });
-  // if (process.env.NODE_ENV !== 'production') {
-  //
-  // }
+  }
 
   const configService: ConfigService = app.get(ConfigService);
-  const port: number = configService.get<number>('PORT') || 1002;
-  // app.use(cors());
+  const port: number = configService.get<number>('PORT') || 3000;
   await app.listen(port, () => console.log(`Listening on port ${port}`));
 }
 bootstrap();

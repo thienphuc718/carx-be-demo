@@ -20,7 +20,7 @@ export interface IProductRepository {
     order_by?: any,
     order_type?: any,
   ): Promise<ProductModel[]>;
-  countByCondition(condition: any, names?: string[]): Promise<number>;
+  countByCondition(condition: any): Promise<number>;
   findById(id: string): Promise<ProductModel>;
   findProductVariantByCondition(
     limit: number,
@@ -34,6 +34,7 @@ export interface IProductRepository {
   findProductAttributeSelectedByCondition(
     condition: any,
   ): Promise<ProductAttributeSelectedModel[]>;
+
   create(
     payload: CreateProductEntityDto,
     callback: (transaction: any, newProduct: ProductModel) => Promise<void>,
@@ -83,7 +84,7 @@ export interface IProductRepository {
   findAllByConditionV2(limit: number, offset: number, condition: any): Promise<ProductModel[]>;
   findAllByConditionWithoutPagination(condition: any): Promise<ProductModel[]>;
   updateByCondition(condition: any, payload: any): Promise<[number, ProductModel[]]>
-  findOneByCondition(condition: any): Promise<ProductModel>;
+  findOneByCondition(condition: any) : Promise<ProductModel>;
 }
 
 export const IProductRepository = Symbol('IProductRepository');

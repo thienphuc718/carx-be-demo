@@ -25,7 +25,6 @@ import {CreateProductPayloadDto, FilterListProductDto, UpdateProductPayloadDto,}
 import {Result} from '../../../results/Result';
 import {ProductTypeEnum} from '../enum/ProductEnum';
 import {FileInterceptor} from '@nestjs/platform-express';
-import {ProductModel} from '../../../models';
 
 @Controller('/v1/products')
 @ApiTags('Products')
@@ -49,12 +48,11 @@ export class ProductPhysicalController extends BaseController {
         this.productService.countProductByCondition(getProductsDto),
         this.productService.getProductList(getProductsDto),
       ]);
-      const data = await Promise.all(products.map((product) => this.mappingProductData(product)));
       const result = Result.ok({
         statusCode: HttpStatus.OK,
         data: {
           total: count,
-          product_list: data,
+          product_list: products.map(product => product.transformToResponse()),
         },
       });
       return this.ok(response, result.value);
@@ -74,11 +72,10 @@ export class ProductPhysicalController extends BaseController {
   ) {
     try {
       const products = await this.productService.getMostCompletedOrderProduct();
-      const data = await Promise.all(products.map((product) => this.mappingProductData(product)));
       const result = Result.ok({
         statusCode: HttpStatus.OK,
         data: {
-          product_list: data,
+          product_list: products.map(product => product.transformToResponse()),
         },
       });
       return this.ok(response, result.value);
@@ -98,12 +95,10 @@ export class ProductPhysicalController extends BaseController {
   ) {
     try {
       const products = await this.productService.getMostViewCountProduct();
-
-      const data = await Promise.all(products.map((product) => this.mappingProductData(product)));
       const result = Result.ok({
         statusCode: HttpStatus.OK,
         data: {
-          product_list: data,
+          product_list: products.map(product => product.transformToResponse()),
         },
       });
       return this.ok(response, result.value);
@@ -125,12 +120,11 @@ export class ProductPhysicalController extends BaseController {
     try {
       const [count, products] =
         await this.productService.getRelatedProductsByProductId(productId);
-      const data = await Promise.all(products.map((product) => this.mappingProductData(product)));
       const result = Result.ok({
         statusCode: HttpStatus.OK,
         data: {
           total: count,
-          product_list: data,
+          product_list: products.map(product => product.transformToResponse()),
         },
       });
       return this.ok(response, result.value);
@@ -153,7 +147,7 @@ export class ProductPhysicalController extends BaseController {
       const product = await this.productService.getProductDetailAndAddViewCount(productId);
       const result = Result.ok({
         statusCode: HttpStatus.OK,
-        data: await this.mappingProductData(product),
+        data: product.transformToResponse(),
       });
       return this.ok(response, result.value);
     } catch (error) {
@@ -343,16 +337,5 @@ export class ProductPhysicalController extends BaseController {
       });
       return this.fail(response, err.error);
     }
-  }
-
-  private async mappingProductData(product: ProductModel) {
-    const productTotalSold = await Promise.all(
-      product.variants.map((variant) =>
-        this.productService.getProductTotalSoldBySku(variant.sku),
-      ),
-    );
-    return product.transformToResponse({
-      total_sold: productTotalSold.reduce((a, b) => a + b, 0),
-    });
   }
 }

@@ -138,7 +138,7 @@ export class FlashBuyRequestServiceImplementation
         channel: 'CARX_FLASH_BUYS',
       });
       await this.notificationService.createNotification({
-        message: `Khách hàng ${customer.full_name || customer.phone_number} vừa tạo yêu cầu flash buy`,
+        message: `Khách hàng ${customer.full_name || ''} vừa tạo yêu cầu flash buy`,
         data: {
           flash_buy_request_id: createdFlashBuyRequest.id,
         },
@@ -150,8 +150,8 @@ export class FlashBuyRequestServiceImplementation
         ios_badgeType: 'Increase',
         ios_badgeCount: 1,
         contents: {
-          en: `Customer ${customer.full_name || customer.phone_number} has created a new flash buy request`,
-          vi: `Khách hàng ${customer.full_name || customer.phone_number} đã tạo yêu cầu Flash Buy mới`
+          en: `Customer ${customer.full_name || ''} has created a new flash buy request`,
+          vi: `Khách hàng ${customer.full_name || ''} đã tạo yêu cầu Flash Buy mới`
         },
         headings: {
           en: `Flash Buy Request`,
@@ -191,17 +191,17 @@ export class FlashBuyRequestServiceImplementation
         if (!customer) {
           throw new Error('Customer not found');
         }
-        await this.notificationService.createUserInAppAndPushNotification(
-          {
-            userId: agent.user_id,
-            message: `Khách hàng ${customer.full_name || customer.phone_number} chấp nhận báo giá Flash Buy của bạn`,
-            heading: `Yêu cầu Flash Buy`,
-            targetGroup: NotificationSegmentEnum.AGENT,
-            data: { flash_buy_request_id: updatedFlashBuyRequest.id },
-            type: NotificationTypeEnum.CUSTOMER_ACCEPT_FLASH_BUY_RESPONSE,
-            image: customer.avatar ?? null,
-          }
-        );
+        // await this.notificationService.createUserInAppAndPushNotification(
+        //   {
+        //     userId: agent.user_id,
+        //     message: `Khách hàng ${customer.full_name || ''} chấp nhận báo giá Flash Buy của bạn`,
+        //     heading: `Yêu cầu Flash Buy`,
+        //     targetGroup: NotificationSegmentEnum.AGENT,
+        //     data: { flash_buy_request_id: updatedFlashBuyRequest.id },
+        //     type: NotificationTypeEnum.CUSTOMER_ACCEPT_FLASH_BUY_RESPONSE,
+        //     image: customer.avatar ?? null,
+        //   }
+        // );
         const flashBuyResponses = await this.flashBuyResponseService.getFlashBuyResponseListByCondition({
           flash_buy_request_id: updatedFlashBuyRequest.id,
         });

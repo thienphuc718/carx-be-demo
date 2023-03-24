@@ -13,6 +13,7 @@ import { ICustomerAgentRelationRepository } from '../../repository/customer-agen
 import { IAgentService } from '../../../agents/service/AgentServiceInterface';
 import { IForbiddenKeywordService } from '../../../forbidden-keywords/service/ForbiddenKeywordServiceInterface';
 import { removeVietnameseTones } from '../../../../helpers/stringHelper';
+import { isNaN } from 'lodash';
 
 @Injectable()
 export class CustomerServiceImplementation implements ICustomerService {
@@ -72,24 +73,20 @@ export class CustomerServiceImplementation implements ICustomerService {
         throw new Error('Agent not found');
       }
       const customerAgents =
-        await this.customerAgentRelationRepository.findAllByConditionWithPagination(
-          limit,
-          (page - 1) * limit,
-          {
+        await this.customerAgentRelationRepository.findAllByConditionWithoutPagination({
             agent_id: agent.id,
-            customerCondition: condition,
+            is_deleted: false,
           },
         );
-      return customerAgents.map((customerAgent) => customerAgent.customer);
-    } else {
-      const customers = await this.customerRepository.findAllByCondition(
-        limit,
-        (page - 1) * limit,
-        condition,
-        schema,
-      );
-      return customers;
-    }
+      condition.id = customerAgents.map(relation => relation.customer_id);
+      }
+    const customers = await this.customerRepository.findAllByCondition(
+      limit,
+      (page - 1) * limit,
+      condition,
+      schema,
+    );
+    return customers;
   }
 
   getCustomerDetailByCondition(
@@ -103,13 +100,18 @@ export class CustomerServiceImplementation implements ICustomerService {
     return this.customerRepository.findById(id);
   }
 
-  countCustomerByCondition(condition: any, schema: string): Promise<number> {
+  async countCustomerByCondition(condition: any, schema: string): Promise<number> {
+    const { agent_id, ...rest } = condition;
+    const queryCondition = this.buildSearchQueryCondition(rest);
     if (condition.agent_id) {
-      return this.customerAgentRelationRepository.countByCondition({
-        agent_id: condition.agent_id,
-      });
+      const customerAgents =
+        await this.customerAgentRelationRepository.findAllByConditionWithoutPagination({
+            agent_id,
+            is_deleted: false,
+          },
+        );
+      queryCondition.id = customerAgents.map(relation => relation.customer_id);
     }
-    const queryCondition = this.buildSearchQueryCondition(condition);
     return this.customerRepository.countByCondition(queryCondition, schema);
   }
 
@@ -211,22 +213,15 @@ export class CustomerServiceImplementation implements ICustomerService {
       }
     }
 
-    if (condition.full_name && condition.full_name.startsWith('0')) {
-      queryCondition = {
-        ...queryCondition,
-        phone_number: {
-          [Op.iLike]: `%${condition.full_name}%`,
-        },
-      };
-      delete queryCondition.full_name;
-    } else if (condition.phone_number) {
+    if (condition.phone_number) {
       queryCondition = {
         ...queryCondition,
         phone_number: {
           [Op.iLike]: `%${condition.phone_number}%`,
         },
       };
-    } else if (condition.email) {
+    }
+    if (condition.email) {
       queryCondition = {
         ...queryCondition,
         email: {
@@ -234,7 +229,6 @@ export class CustomerServiceImplementation implements ICustomerService {
         },
       };
     }
-    console.log(queryCondition);
     return queryCondition;
   }
 

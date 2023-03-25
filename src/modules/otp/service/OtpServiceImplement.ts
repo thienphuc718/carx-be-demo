@@ -75,7 +75,8 @@ export class OtpServiceImplement implements IOtpService {
       //   }
       // });
       // console.log(data);
-      return true;
+      // return data.status === 1;
+      return true
     } catch (error) {
       console.log(error);
       throw error;

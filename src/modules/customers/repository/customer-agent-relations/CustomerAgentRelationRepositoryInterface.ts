@@ -5,6 +5,7 @@ export interface ICustomerAgentRelationRepository {
   create(payload: any): Promise<CustomerAgentRelationsModel>;
   bulkCreate(payload: Array<any>): Promise<CustomerAgentRelationsModel[]>;
   countByCondition(condition: any): Promise<number>;
+  findAllByConditionWithoutPagination(condition: any): Promise<CustomerAgentRelationsModel[]>;
 }
 
 export const ICustomerAgentRelationRepository = Symbol('ICustomerAgentRelationRepository');

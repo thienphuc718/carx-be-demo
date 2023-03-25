@@ -69,4 +69,13 @@ export class CustomerAgentRelationRepositoryImplementation
       },
     });
   }
+
+  findAllByConditionWithoutPagination(condition: any): Promise<CustomerAgentRelationsModel[]> {
+    return this.customerAgentRelationModel.findAll({
+      where: {
+        ...condition,
+        is_deleted: false,
+      },
+    })
+  }
 }

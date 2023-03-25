@@ -35,14 +35,14 @@ import { validate, ValidatorOptions } from 'class-validator';
 import { AppGateway } from '../../../../gateway/AppGateway';
 import { IOrderService } from '../../../orders/service/order/OrderServiceInterface';
 import { OrderStatusEnum, OrderTypeEnum } from '../../../orders/enum/OrderEnum';
-import { countBy, isNil, isArray } from 'lodash';
-import { InsuranceProductServiceInterface } from "../insurance-products/InsuranceProductServiceInterface";
-import { VehicleTypeList } from "../../constants/InsuranceProductConstants";
-import { InsuranceProductEntityDto } from "../../dto/InsuranceProductDto";
-import { IAgentService } from "../../../agents/service/AgentServiceInterface";
+import { countBy, isArray, isNil } from 'lodash';
+import { InsuranceProductServiceInterface } from '../insurance-products/InsuranceProductServiceInterface';
+import { VehicleTypeList } from '../../constants/InsuranceProductConstants';
+import { InsuranceProductEntityDto } from '../../dto/InsuranceProductDto';
+import { IAgentService } from '../../../agents/service/AgentServiceInterface';
 import {
-  ISectionProductRelationService
-} from "../../../sections/section-product-relation/service/SectionProductRelationServiceInterface";
+  ISectionProductRelationService,
+} from '../../../sections/section-product-relation/service/SectionProductRelationServiceInterface';
 
 export class ProductServiceImplementation implements IProductService {
   constructor(
@@ -87,7 +87,6 @@ export class ProductServiceImplementation implements IProductService {
           latitude,
         });
         condition.agent_id = agents.map(agent => agent.id);
-
       }
       if (getProductsDto.agent_id) {
         const agent = await this.agentService.getAgentDetails(getProductsDto.agent_id);
@@ -95,14 +94,12 @@ export class ProductServiceImplementation implements IProductService {
           condition.is_insurance_product = true;
         }
       }
-      const products = await this.productRepository.findAllByCondition(
+      return this.productRepository.findAllByCondition(
         limit,
         (page - 1) * limit,
         condition,
         getProductsDto.name?.toString().split(' '),
       );
-
-      return products;
     } catch (error) {
       console.log(error);
       throw error;
@@ -283,7 +280,6 @@ export class ProductServiceImplementation implements IProductService {
     try {
       const { distance, longitude, latitude, ...rest } = condition;
       let conditionParams = this.buildSearchQueryCondition(rest);
-
       if (distance || latitude || longitude) {
         if (!(distance && latitude && longitude)) {
           throw new Error('Missing required properties to find products by geolocation');
@@ -305,13 +301,9 @@ export class ProductServiceImplementation implements IProductService {
           conditionParams.is_insurance_product = true;
         }
       }
-
-      const products = await this.productRepository.countByCondition(
+      return this.productRepository.countByCondition(
         conditionParams,
-        condition.name?.toString().split(' '),
-      );
-
-      return products;
+        condition.name?.toString().split(' '),);
     } catch (error) {
       throw error;
     }
@@ -933,7 +925,6 @@ export class ProductServiceImplementation implements IProductService {
         },
       }
     }
-
     if ((isNil(condition.agent_id) || !isArray(condition.agent_id)) && is_status_included) {
       queryCondition.status = ProductStatusEnum.ACTIVE;
     }

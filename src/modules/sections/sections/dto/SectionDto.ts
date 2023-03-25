@@ -28,8 +28,8 @@ export class SectionEntityDto {
   @IsBoolean()
   is_enabled?: boolean;
 
-  @IsOptional()
   @IsBoolean()
+  @IsOptional()
   isnoticeable?: boolean;
 
   @IsOptional()
@@ -69,8 +69,8 @@ export class FilterSectionDto {
   @IsOptional()
   is_enabled?: boolean;
 
-  @IsBoolean()
   @IsOptional()
+  @IsBoolean()
   isnoticeable?: boolean;
 }
 

@@ -2,7 +2,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import {
   PromotionModel,
   SectionPromotionRelationModel,
-  AgentModel
 } from '../../../../models';
 import { SectionPromotionRelationQueryConditionType } from '../type/SectionPromotionRelationType';
 import { ISectionPromotionRelationRepository } from './SectionPromotionRelationRepositoryInterface';

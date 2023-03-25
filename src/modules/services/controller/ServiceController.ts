@@ -329,10 +329,10 @@ export class ServiceController extends BaseController {
   ) {
     try {
       this.eventEmitter.emit(
-        'EVENT_SERVICE_BULK_IMPORT',{
-          file: file,
-          user_id: request.user.id
-        },
+        'EVENT_SERVICE_BULK_IMPORT', {
+        file: file,
+        user_id: request.user.id
+      },
       );
       const result = Result.ok({
         statusCode: HttpStatus.OK,

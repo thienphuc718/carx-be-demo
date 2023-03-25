@@ -63,7 +63,7 @@ export class AuthServiceBase implements IAuthService {
           schema: schema
         }, schema)
         return payload
-      } else if(data.method === AuthMethodEnum.PHONE_NUMBER_PASSWORD) {
+      } else if (data.method === AuthMethodEnum.PHONE_NUMBER_PASSWORD) {
         const payload = await this.authServicePhoneNumberPassword.signUp({
           method: data.method,
           ...data.payload,
@@ -127,14 +127,14 @@ export class AuthServiceBase implements IAuthService {
           schema: schema
         }, schema)
         return userPayload
-      } else if(data.method == SignInMethodEnum.PHONE_NUMBER_OTP) {
+      } else if (data.method == SignInMethodEnum.PHONE_NUMBER_OTP) {
         const userPayload = this.authServicePhoneNumberOtp.signIn({
           method: data.method,
           ...data.payload,
           schema: schema
         }, schema)
         return userPayload
-      } if(data.method == SignInMethodEnum.PHONE_NUMBER_PASSWORD) {
+      } if (data.method == SignInMethodEnum.PHONE_NUMBER_PASSWORD) {
         const userPayload = this.authServicePhoneNumberPassword.signIn({
           method: data.method,
           ...data.payload,
@@ -195,7 +195,7 @@ export class AuthServiceBase implements IAuthService {
           type: 'CUSTOMER'
         }
       }
-      
+
     } catch (error) {
       throw error;
     }

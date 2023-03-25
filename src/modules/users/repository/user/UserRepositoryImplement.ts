@@ -18,7 +18,7 @@ export class UserRepositoryImplementation implements IUserRepository {
     @InjectModel(UserModel) private userModel: typeof UserModel,
     // @InjectModel(UserCompanyRelationsModel)
     // private userCompanyRelationsModel: typeof UserCompanyRelationsModel,
-  ) {}
+  ) { }
 
   findAll(schema: string): Promise<UserModel[]> {
     if (schema) {
@@ -95,6 +95,7 @@ export class UserRepositoryImplementation implements IUserRepository {
 
   findOneByCondition(condition: any, schema: string): Promise<UserModel> {
     if (schema) {
+      console.log('hello long loz', condition)
       return this.userModel.findOne({
         where: {
           ...condition,

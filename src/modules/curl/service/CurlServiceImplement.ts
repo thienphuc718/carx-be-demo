@@ -34,15 +34,15 @@ export class CurlServiceImplementation implements ICurlService {
 
   sendPostRequest(payload: PostCurlPayloadDto) {
     try {
-    if (payload.token) {
-      this.config = {
-        headers: { Authorization: `${payload.token}` }
-      };
-    }
-      return Axios.post(payload.url, payload.data, this.config) 
+      if (payload.token) {
+        this.config = {
+          headers: { Authorization: `${payload.token}` }
+        };
+      }
+      return Axios.post(payload.url, payload.data, this.config)
     } catch (error) {
       const err = {
-        url: payload. url,
+        url: payload.url,
         data: payload.data,
         statusCode: error.code,
         message: error.response.message,

@@ -36,6 +36,7 @@ export interface IProductVariantRepository {
     transaction: any,
   ): Promise<ProductVariantModel[]>;
   findAllBySkus(skuList: string[]): Promise<ProductVariantModel[]>
+  findAllByConditionWithoutPagination(condition: any): Promise<ProductVariantModel[]>
 }
 
 export const IProductVariantRepository = Symbol('IProductVariantRepository');

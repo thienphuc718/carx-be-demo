@@ -1,12 +1,17 @@
-FROM node:16-alpine as builder
-
-EXPOSE 3000
+FROM node:16-alpine
 
 WORKDIR /app
-COPY ./package.json ./
+
+COPY package.json ./
+
+COPY yarn.lock ./
+
 RUN yarn
+
 COPY . .
 
-RUN ["yarn", "build"]
+RUN yarn build
+
+EXPOSE 3000
 
 CMD ["yarn", "start:prod"]

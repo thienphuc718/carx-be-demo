@@ -123,6 +123,13 @@ export class ChatMessageServiceImplementation implements IChatMessageService {
           data: {
             conversation_id: conversation.id,
             message_id: createdMessage.id,
+            sender: {
+              id: sender.id,
+              name: sender.name || sender.full_name,
+              avatar: sender.avatar,
+              address: sender.address,
+              is_agent: sender === agent,
+            }
           },
           type: NotificationTypeEnum.NEW_MESSAGE,
           image: receiver.avatar ?? null,

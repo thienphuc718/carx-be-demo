@@ -44,14 +44,14 @@ export class ProductRepositoryImplementation implements IProductRepository {
     order_type?: any,
   ): Promise<ProductModel[]> {
     if (!order_by) {
-      order_by = 'view_count'
+      order_by = 'updated_at'
     }
     if (!order_type) {
       order_type = 'desc'
     }
 
     const { variantCondition, insuranceProductCondition, ...productCondition } = condition;
-    // let tsVectorSearchString = null;
+    // let tsVectorSearchString =  null;
     // if (productCondition.name) {
     //   tsVectorSearchString = getTextSearchString(productCondition.name);
     //   console.log("TSVECTOR STRING: ", tsVectorSearchString);
@@ -60,15 +60,15 @@ export class ProductRepositoryImplementation implements IProductRepository {
     //   };
     //   delete productCondition.name;
     // }
-    const includeOptions: IncludeOptions[] = [
-      {
-        model: ProductCategorySelectedModel,
-        as: 'categories',
-        required: false,
-        where: { is_deleted: false },
-        attributes: ['category_id'],
-        include: [{ model: ServiceCategoryModel, as: 'category_details' }],
-      },
+    let includeOptions: IncludeOptions[] = [
+      // {
+      //   model: ProductCategorySelectedModel,
+      //   as: 'categories',
+      //   required: false,
+      //   where: { is_deleted: false },
+      //   attributes: ['category_id'],
+      //   include: [{ model: ServiceCategoryModel, as: 'category_details' }],
+      // },
       {
         model: ProductVariantModel,
         as: 'variants',
@@ -76,9 +76,10 @@ export class ProductRepositoryImplementation implements IProductRepository {
           ...variantCondition,
           is_deleted: false,
         },
+        separate: true,
+        limit: 1
       },
     ];
-
     if (condition.is_insurance_product) {
       includeOptions.push({
         model: InsuranceProductModel,
@@ -89,7 +90,6 @@ export class ProductRepositoryImplementation implements IProductRepository {
         }
       })
     }
-
     if (names) {
       const products = await this.productModel.findAll({
         limit: limit,
@@ -123,10 +123,12 @@ export class ProductRepositoryImplementation implements IProductRepository {
     const products = await this.productModel.findAll({
       limit: limit,
       offset: offset,
-      where: {
-        ...productCondition,
-      },
+      where: { ...productCondition },
       include: includeOptions,
+      // order: tsVectorSearchString ?
+      //   this.sequelize.literal(`ts_rank(products.tsv_converted_name, to_tsquery('${tsVectorSearchString}')) desc`)
+      //     :
+      //   [[order_by, order_type]],
     });
 
     return products
@@ -174,7 +176,7 @@ export class ProductRepositoryImplementation implements IProductRepository {
     });
   }
 
-  async countByCondition(condition: any, names: string[]): Promise<number> {
+  async countByCondition(condition: any, names?: string[]): Promise<number> {
     const { variantCondition, insuranceProductCondition, ...productCondition } = condition;
     // if (productCondition.name) {
     //   const convertedSearchString = getTextSearchString(condition.name);
@@ -183,7 +185,7 @@ export class ProductRepositoryImplementation implements IProductRepository {
     //   };
     //   delete productCondition.name;
     // }
-    const count = await this.productModel.count({
+    return this.productModel.count({
       where: {
         ...productCondition,
         is_deleted: false,
@@ -208,12 +210,10 @@ export class ProductRepositoryImplementation implements IProductRepository {
           required: condition.is_insurance_product || false,
           where: {
             ...insuranceProductCondition,
-          },
-        },
-      ],
-    });
-
-    return count;
+          }
+        }
+      ]
+    })
   }
 
   findById(id: string): Promise<ProductModel> {
@@ -222,7 +222,25 @@ export class ProductRepositoryImplementation implements IProductRepository {
         id,
         is_deleted: false,
       },
-      attributes: { exclude: ['brand_id'] },
+      attributes: {
+        include: [
+          [
+            this.sequelize.literal(`
+            (
+               select coalesce(sum("order_items".quantity),0)
+               from "order_items", "orders"
+               where "order_items".is_deleted = false
+                 and "orders".is_deleted = false
+                 and "orders".status = 'COMPLETED'
+                 and "order_items".order_id = "orders".id
+                 and "order_items".product_id = "products".id
+            )
+            `),
+            'total_sold'
+          ]
+        ],
+        exclude: ['brand_id']
+      },
       include: [
         {
           model: ProductBrandModel,

@@ -89,17 +89,20 @@ export class ServiceRepositoryImplementation implements IServiceRepository {
           where: {
             ...productCondition
           },
+          required: true,
           include: [
             {
               model: ProductVariantModel,
               where: { ...variantCondition, is_deleted: false },
+              separate: true,
+              limit: 1,
             },
           ],
         },
         {
           model: AgentModel,
           required: false,
-          attributes: ['id', 'longitude', 'latitude'],
+          attributes: ['id'],
         },
         {
           model: ServiceCategoryRelationModel,

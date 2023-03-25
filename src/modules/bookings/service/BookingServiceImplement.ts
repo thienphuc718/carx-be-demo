@@ -282,9 +282,20 @@ export class BookingServiceImplementation implements IBookingService {
             });
             break;
           case BookingStatusEnum.PROCESSING:
-            await this.orderService.updateOrder(updatedBooking.order_id, {
-              status: OrderStatusEnum.PROCESSING
-            });
+            // await this.orderService.updateOrder(updatedBooking.order_id, {
+            //   status: OrderStatusEnum.PROCESSING
+            // });
+            await this.notificationService.createUserInAppAndPushNotification(
+              {
+                userId: customer.user_id,
+                message: `Đơn hàng dịch vụ #${updatedBooking.booking_no} của bạn đang được thực hiện`,
+                heading: `Đơn hàng dịch vụ #${updatedBooking.booking_no}`,
+                targetGroup: NotificationSegmentEnum.CUSTOMER,
+                data: { booking_id: updatedBooking.id },
+                type: NotificationTypeEnum.AGENT_CONFIRM_BOOKING,
+                image: agent.avatar ?? null,
+              }
+            );
             this.appGateway.server.emit(`ROOM_${updatedBooking.customer_id}`, {
               action: BookingActionEnum.PROCESSING_SERVICE,
               data: {
@@ -449,7 +460,7 @@ export class BookingServiceImplementation implements IBookingService {
         (value, orderItem) => value + orderItem.price * orderItem.quantity,
         0,
       );
-      const updatedOrder = await this.orderService.updateOrder(booking.order_id, {
+      await this.orderService.updateOrder(booking.order_id, {
         initial_value: newOrderValue,
         value: newOrderValue,
       });

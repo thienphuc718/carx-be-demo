@@ -6,7 +6,7 @@ import {
   UpdatedAt,
   DataType,
   BelongsTo,
-  PrimaryKey,
+  PrimaryKey, ForeignKey,
 } from 'sequelize-typescript';
 import { ProductVariantValueDto } from '../modules/products/dto/ProductVariantDto';
 import { ProductModel } from './Products';
@@ -62,6 +62,12 @@ export class ProductVariantModel extends Model<IProductVariantModel> {
     type: DataType.ARRAY(DataType.JSONB),
   })
   value: ProductVariantValueDto[];
+
+  @ForeignKey(() => ProductModel)
+  @Column({
+    type: DataType.UUID,
+  })
+  product_id: string;
 
   @Column({
     type: DataType.BOOLEAN,

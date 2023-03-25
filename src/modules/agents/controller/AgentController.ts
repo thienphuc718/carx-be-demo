@@ -48,7 +48,7 @@ export class AgentController extends BaseController {
     @Query() filterAgentDto: FilterAgentDto,
   ) {
     try {
-      const { latitude, longitude, distance, ...rest } = filterAgentDto;
+      const { latitude, longitude, distance } = filterAgentDto;
       let agents = [];
       let totalAgents = 0;
       if (latitude && longitude && distance) {

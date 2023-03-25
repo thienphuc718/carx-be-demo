@@ -23,7 +23,7 @@ export function getJwtPayload(userData) {
 }
 
 export function generateJwtToken(tokenPayload) {
-  return jsonwebtoken.sign(tokenPayload, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', {
+  return jsonwebtoken.sign(tokenPayload, process.env.JWT_SECRET, {
     expiresIn: '365 days',
   });
 }
@@ -37,7 +37,7 @@ export function verifyJwtToken(token: string): [boolean, unknown] {
 
 export function decodeJwtToken(token: string) {
   try {
-    return Result.ok(jsonwebtoken.verify(token, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'));
+    return Result.ok(jsonwebtoken.verify(token, process.env.JWT_SECRET));
   } catch (error) {
     return Result.fail({
       statusCode: 400,
@@ -107,8 +107,8 @@ export function generateStringeeToken(userId?: string) {
   };
 
   let payload: Record<string, any> = {
-    jti: 'SK.0.ezfGef3a95fkwRPphl78s9oNPZaWJ0dk' + '-' + now,
-    iss: 'SK.0.ezfGef3a95fkwRPphl78s9oNPZaWJ0dk',
+    jti: process.env.STRINGEE_API_KEY + '-' + now,
+    iss: process.env.STRINGEE_API_KEY,
     exp: exp,
   };
 
@@ -118,10 +118,8 @@ export function generateStringeeToken(userId?: string) {
     payload.rest_api = true; // get rest api access token
   }
 
-  const token = jsonwebtoken.sign(payload, 'blRRblFRTURoRDkwS0tWSVh2eHJ4UFpnSlZaQVhRYg==', {
+  const token = jsonwebtoken.sign(payload, process.env.STRINGEE_API_SECRET, {
     header: header,
   });
   return token;
-
-
 }

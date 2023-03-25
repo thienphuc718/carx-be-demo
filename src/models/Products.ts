@@ -271,6 +271,9 @@ export class ProductModel extends Model<ProductEntityDto> {
         };
         delete mappedDetails.variants;
         delete mappedDetails.attributes;
+        if (mappedDetails['total_sold']) {
+          mappedDetails['total_sold'] = Number(mappedDetails['total_sold']);
+        }
         return mappedDetails;
       }
     } catch (error) {

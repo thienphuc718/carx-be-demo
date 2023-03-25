@@ -19,9 +19,9 @@ export class FileServiceImplementation implements IFileService {
   private s3: S3;
   constructor() {
     this.s3 = new S3({
-      accessKeyId: 'AKIA55QWKTD4RBJRKGMI',
-      secretAccessKey: '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',
-      region: 'ap-southeast-1',
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_KEY,
+      region: process.env.AWS_S3_BUCKET_REGION,
     });
   }
 
@@ -34,9 +34,9 @@ export class FileServiceImplementation implements IFileService {
     folder: FolderEnum,
   ): Promise<FileObject> {
     const params = {
-      Bucket: 'carx',
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
       Key:
-        '/' +
+        this.uploadFolder(folder) +
         hashingMd5FileName(file.originalname + Date.now()) +
         `.${file.mimetype.split('/')[1]}`,
       Body: file.buffer,
@@ -59,7 +59,7 @@ export class FileServiceImplementation implements IFileService {
     try {
       const data = await fs.readFileSync(filePath);
       const params = {
-        Bucket: 'carx',
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
         Key: FolderEnum.FILE + '/' + hashingMd5FileName(filePath.replace(/^.*[\\\/]/, '')) + path.extname(filePath),
         Body: data,
       };
@@ -70,13 +70,13 @@ export class FileServiceImplementation implements IFileService {
   }
 
   public async uploadLocalHostFileWithCustomFileName(
-    filePath: string,
-    fileName: string,
+      filePath: string,
+      fileName: string,
   ): Promise<FileObject> {
     try {
       const data = await fs.readFileSync(filePath);
       const params = {
-        Bucket: 'carx',
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
         Key: FolderEnum.FILE + '/' + fileName + path.extname(filePath),
         Body: data,
       };

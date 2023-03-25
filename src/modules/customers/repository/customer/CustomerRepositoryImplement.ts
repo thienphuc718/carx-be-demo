@@ -33,7 +33,7 @@ export class CustomerRepositoryImplementation implements ICustomerRepository {
       rest.tsv_converted_full_name = {
         [Op.match]: this.sequelize.fn('to_tsquery', tsVectorSearchString),
       };
-      delete rest.name;
+      delete rest.full_name;
     }
     if (is_verified !== undefined && is_verified !== null) {
       userCondition.is_verified = is_verified;
@@ -161,7 +161,7 @@ export class CustomerRepositoryImplementation implements ICustomerRepository {
         rest.tsv_converted_full_name = {
           [Op.match]: this.sequelize.fn('to_tsquery', tsVectorSearchString),
         };
-        delete rest.name;
+        delete rest.full_name;
       }
       return this.customerModel.count({
         where: {

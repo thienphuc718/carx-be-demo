@@ -34,6 +34,7 @@ export interface IProductRepository {
   findProductAttributeSelectedByCondition(
     condition: any,
   ): Promise<ProductAttributeSelectedModel[]>;
+
   create(
     payload: CreateProductEntityDto,
     callback: (transaction: any, newProduct: ProductModel) => Promise<void>,

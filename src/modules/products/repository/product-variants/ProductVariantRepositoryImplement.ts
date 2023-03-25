@@ -128,4 +128,13 @@ export class ProductVariantRepositoryImplementation
       },
     );
   }
+
+  findAllByConditionWithoutPagination(condition: any): Promise<ProductVariantModel[]> {
+    return this.productVariantModel.findAll({
+      where: {
+        is_deleted: false,
+        ...condition
+      }
+    });
+  }
 }

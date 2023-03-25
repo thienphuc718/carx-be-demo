@@ -62,7 +62,6 @@ export class ServiceModel extends Model<ServiceModel> {
   })
   product_id: string;
 
-  @ForeignKey(() => AgentModel)
   @Column({
     type: DataType.UUID,
   })

@@ -1,5 +1,5 @@
-import {forwardRef, Inject} from '@nestjs/common';
-import {ServiceCategoryModel, ServiceModel} from '../../../models';
+import { forwardRef, Inject } from '@nestjs/common';
+import { ServiceCategoryModel, ServiceModel } from '../../../models';
 
 import {
   CreateServicePayloadDto,
@@ -8,26 +8,26 @@ import {
   UpdateServicePayloadDto,
 } from '../dto/ServiceDto';
 
-import {UpdateProductPayloadDto} from '../../products/dto/ProductDto';
+import { UpdateProductPayloadDto } from '../../products/dto/ProductDto';
 
-import {ProductStatusEnum, ProductTypeEnum} from '../../products/enum/ProductEnum';
-import {ServiceExcelColumnEnum, ServiceGuaranteeTimeUnitEnum,} from '../enum/ServiceEnum';
+import { ProductStatusEnum, ProductTypeEnum } from '../../products/enum/ProductEnum';
+import { ServiceExcelColumnEnum, ServiceGuaranteeTimeUnitEnum } from '../enum/ServiceEnum';
 
-import {IServiceRepository} from '../repository/ServiceRepositoryInterface';
-import {IServiceService} from './ServiceServiceInterface';
-import {IProductService} from '../../products/service/products/ProductServiceInterface';
-import {IServiceCategoryService} from './service-categories/ServiceCategoryServiceInterface';
-import {IUserService} from '../../users/service/UserServiceInterface';
-import {IForbiddenKeywordService} from '../../forbidden-keywords/service/ForbiddenKeywordServiceInterface';
-import {Op} from 'sequelize';
-import {IServiceCategoryRelationService} from './service-category-relations/ServiceCategoryRelationServiceInterface';
+import { IServiceRepository } from '../repository/ServiceRepositoryInterface';
+import { IServiceService } from './ServiceServiceInterface';
+import { IProductService } from '../../products/service/products/ProductServiceInterface';
+import { IServiceCategoryService } from './service-categories/ServiceCategoryServiceInterface';
+import { IUserService } from '../../users/service/UserServiceInterface';
+import { IForbiddenKeywordService } from '../../forbidden-keywords/service/ForbiddenKeywordServiceInterface';
+import { Op } from 'sequelize';
+import { IServiceCategoryRelationService } from './service-category-relations/ServiceCategoryRelationServiceInterface';
 import * as Excel from 'exceljs';
-import {plainToClass} from 'class-transformer';
-import {validate, ValidatorOptions} from 'class-validator';
-import {AppGateway} from '../../../gateway/AppGateway';
-import {removeVietnameseTones} from '../../../helpers/stringHelper';
-import {IAgentService} from '../../agents/service/AgentServiceInterface';
-import {isArray, isNil, uniqBy} from "lodash";
+import { plainToClass } from 'class-transformer';
+import { validate, ValidatorOptions } from 'class-validator';
+import { AppGateway } from '../../../gateway/AppGateway';
+import { removeVietnameseTones } from '../../../helpers/stringHelper';
+import { IAgentService } from '../../agents/service/AgentServiceInterface';
+import { isArray, isNil, uniqBy } from 'lodash';
 
 export class ServiceServiceImplementation implements IServiceService {
   constructor(
@@ -45,7 +45,7 @@ export class ServiceServiceImplementation implements IServiceService {
     @Inject(AppGateway) private appGateway: AppGateway,
     @Inject(forwardRef(() => IAgentService))
     private agentService: IAgentService,
-  ) {}
+  ) { }
 
   async getServiceList(payload: FilterServiceDto): Promise<ServiceModel[]> {
     try {
@@ -75,20 +75,18 @@ export class ServiceServiceImplementation implements IServiceService {
           });
         condition.agent_id = agents.map((agent) => agent.id);
       }
-      let services: ServiceModel[] = null;
       if (category_id) {
         const relations =
           await this.serviceCategoryRelationService.getServiceCategoryRelationListByConditionWithoutPagination(
             { category_id: category_id }
           );
-          condition.id = uniqBy(relations, 'service_id').map(item => item.service_id);
+        condition.id = uniqBy(relations, 'service_id').map(item => item.service_id);
       }
-      services = await this.serviceRepository.findAllByCondition(
+      return this.serviceRepository.findAllByCondition(
         limit || undefined,
         limit && page ? (page - 1) * limit : undefined,
         condition,
       );
-      return services;
     } catch (error) {
       console.log(error);
       throw error;
@@ -201,8 +199,8 @@ export class ServiceServiceImplementation implements IServiceService {
             agent_category_id: agent.category_id,
             converted_name: payload.name
               ? removeVietnameseTones(payload.name)
-                  .split(' ')
-                  .filter((item) => item !== '').join(' ')
+                .split(' ')
+                .filter((item) => item !== '').join(' ')
               : '',
           },
           transaction,
@@ -581,9 +579,9 @@ export class ServiceServiceImplementation implements IServiceService {
         if (errors.length > 0) {
           errors.map(
             (err) =>
-              (errorMessages = errorMessages.concat(
-                Object.values(err.constraints),
-              )),
+            (errorMessages = errorMessages.concat(
+              Object.values(err.constraints),
+            )),
           );
         }
 
@@ -680,8 +678,8 @@ export class ServiceServiceImplementation implements IServiceService {
         variantCondition: {
           is_deleted: false,
           price: {
-            ...(condition.min_price && {[Op.gte]: condition.min_price}),
-            ...(condition.max_price && {[Op.lte]: condition.max_price}),
+            ...(condition.min_price && { [Op.gte]: condition.min_price }),
+            ...(condition.max_price && { [Op.lte]: condition.max_price }),
           },
         },
       }

@@ -17,6 +17,12 @@ export class PromotionRepositoryImplementation implements IPromotionRepository {
       where: {
         is_deleted: false,
       },
+      include: [
+        {
+          model: AgentModel,
+          attributes: ['name', 'id', 'avatar'],
+        },
+      ],
       order: [['created_at', 'desc']],
     });
   }
@@ -55,6 +61,12 @@ export class PromotionRepositoryImplementation implements IPromotionRepository {
         ...condition,
         is_deleted: false,
       },
+      include: [
+        {
+          model: AgentModel,
+          attributes: ['name', 'id', 'avatar'],
+        },
+      ],
     });
   }
   countByCondition(condition: any): Promise<number> {
@@ -76,6 +88,12 @@ export class PromotionRepositoryImplementation implements IPromotionRepository {
         id: id,
         is_deleted: false,
       },
+      include: [
+        {
+          model: AgentModel,
+          attributes: ['name', 'id', 'avatar'],
+        },
+      ],
     });
   }
   create(payload: any): Promise<PromotionModel> {

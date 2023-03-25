@@ -63,7 +63,6 @@ export { RoleFeatureRelationModel } from './RoleFeatureRelations';
 export { LikeModel } from './Likes';
 export { PopUpModel } from './PopUps';
 export { SliderModel } from './Sliders';
-export { CustomLocationModel } from './CustomLocations';
 export { SectionModel } from './Sections';
 export { SectionAgentRelationModel } from './SectionAgentRelations';
 export { SectionProductRelationModel } from './SectionProductRelations';

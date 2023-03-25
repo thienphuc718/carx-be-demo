@@ -14,7 +14,7 @@ export class ServiceRepositoryImplementation implements IServiceRepository {
     @InjectModel(ServiceCategoryRelationModel)
     private serviceCategoryRelationModel: typeof ServiceCategoryRelationModel,
     private sequelize: Sequelize,
-  ) { }
+  ) {}
 
   findAll(): Promise<ServiceModel[]> {
     return this.serviceModel.findAll({
@@ -119,7 +119,7 @@ export class ServiceRepositoryImplementation implements IServiceRepository {
       order: [
         tsVectorSearchString ?
           this.sequelize.literal(`ts_rank(services.tsv_converted_name, to_tsquery('${tsVectorSearchString}')) desc`)
-          :
+            :
           [order_by, order_type]],
     });
   }

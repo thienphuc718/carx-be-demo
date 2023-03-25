@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { PromotionModel, AgentModel } from '../../../../models';
+import { PromotionModel } from '../../../../models';
 import { IPromotionRepository } from './PromotionRepositoryInterface';
 import { getTextSearchString } from "../../../../helpers/stringHelper";
 import { Sequelize } from "sequelize-typescript";
@@ -11,7 +11,7 @@ export class PromotionRepositoryImplementation implements IPromotionRepository {
   constructor(
     @InjectModel(PromotionModel) private promotionModel: typeof PromotionModel,
     private sequelize: Sequelize
-  ) { }
+  ) {}
   findAll(): Promise<PromotionModel[]> {
     return this.promotionModel.findAll({
       where: {
@@ -43,15 +43,9 @@ export class PromotionRepositoryImplementation implements IPromotionRepository {
       limit: limit,
       offset: offset,
       where: condition,
-      include: [
-        {
-          model: AgentModel,
-          attributes: ['name', 'id', 'avatar'],
-        },
-      ],
       order: [tsVectorSearchString ?
         this.sequelize.literal(`ts_rank(promotions.tsv_converted_name, to_tsquery('${tsVectorSearchString}')) desc`)
-        :
+          :
         ['created_at', 'desc']],
     });
   }

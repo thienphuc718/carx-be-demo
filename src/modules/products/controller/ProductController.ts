@@ -15,16 +15,16 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import {ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags,} from '@nestjs/swagger';
-import {EventEmitter2,} from '@nestjs/event-emitter';
-import {AuthGuard} from '../../../guards';
-import {BaseController} from '../../../BaseController';
-import {IProductService} from '../service/products/ProductServiceInterface';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags, } from '@nestjs/swagger';
+import { EventEmitter2, } from '@nestjs/event-emitter';
+import { AuthGuard } from '../../../guards';
+import { BaseController } from '../../../BaseController';
+import { IProductService } from '../service/products/ProductServiceInterface';
 import * as express from 'express';
-import {CreateProductPayloadDto, FilterListProductDto, UpdateProductPayloadDto,} from '../dto/ProductDto';
-import {Result} from '../../../results/Result';
-import {ProductTypeEnum} from '../enum/ProductEnum';
-import {FileInterceptor} from '@nestjs/platform-express';
+import { CreateProductPayloadDto, FilterListProductDto, UpdateProductPayloadDto, } from '../dto/ProductDto';
+import { Result } from '../../../results/Result';
+import { ProductTypeEnum } from '../enum/ProductEnum';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('/v1/products')
 @ApiTags('Products')
@@ -320,10 +320,10 @@ export class ProductPhysicalController extends BaseController {
   ) {
     try {
       this.eventEmitter.emit(
-        'EVENT_PRODUCT_BULK_IMPORT',{
-          file: file,
-          user_id: request.user.id
-        },
+        'EVENT_PRODUCT_BULK_IMPORT', {
+        file: file,
+        user_id: request.user.id
+      },
       );
       const result = Result.ok({
         statusCode: HttpStatus.OK,

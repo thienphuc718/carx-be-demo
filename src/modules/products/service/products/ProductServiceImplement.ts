@@ -60,7 +60,7 @@ export class ProductServiceImplementation implements IProductService {
     @Inject(InsuranceProductServiceInterface) private insuranceProductService: InsuranceProductServiceInterface,
     @Inject(forwardRef(() => IAgentService)) private agentService: IAgentService,
     @Inject(forwardRef(() => ISectionProductRelationService)) private sectionProductService: ISectionProductRelationService,
-  ) {}
+  ) { }
 
   async checkProductSkuExist(sku: string): Promise<boolean> {
     let count = await this.productVariantRepository.countByCondition({
@@ -94,11 +94,11 @@ export class ProductServiceImplementation implements IProductService {
           condition.is_insurance_product = true;
         }
       }
-
       return this.productRepository.findAllByCondition(
         limit,
         (page - 1) * limit,
         condition,
+        getProductsDto.name?.toString().split(' '),
       );
     } catch (error) {
       console.log(error);
@@ -202,7 +202,7 @@ export class ProductServiceImplementation implements IProductService {
           ? false
           : true;
       if (payload.is_insurance_product && agent.category_id !== '65a347b9-3c84-4e23-9856-c7245d7bdffd') {
-          throw new Error('Agent is not an insurance agent');
+        throw new Error('Agent is not an insurance agent');
       }
       const productEntity: CreateProductEntityDto = {
         ...product,
@@ -220,26 +220,26 @@ export class ProductServiceImplementation implements IProductService {
         const categoryArray: CreateProductCategorySelectedEntityDto[] =
           category_ids
             ? category_ids.map((category_id) => ({
-                product_id: newProduct.id,
-                category_id,
-              }))
+              product_id: newProduct.id,
+              category_id,
+            }))
             : [];
         const variantArray: CreateProductVariantEntityDto[] = variants
           ? variants.map((variant) => ({
-              ...variant,
-              discount_price:
-                ((payload.price - payload.discount_price) / payload.price) *
-                100,
-              product_id: newProduct.id,
-              sku: `${+new Date()}`,
-            }))
+            ...variant,
+            discount_price:
+              ((payload.price - payload.discount_price) / payload.price) *
+              100,
+            product_id: newProduct.id,
+            sku: `${+new Date()}`,
+          }))
           : [
-              {
-                product_id: newProduct.id,
-                sku: payload.sku ? payload.sku : `${+new Date()}`,
-                ...product,
-              } as CreateProductVariantEntityDto,
-            ];
+            {
+              product_id: newProduct.id,
+              sku: payload.sku ? payload.sku : `${+new Date()}`,
+              ...product,
+            } as CreateProductVariantEntityDto,
+          ];
         const attributeArray =
           this.buildProductAttributeSelectedFromVariantList(
             variants,
@@ -291,7 +291,9 @@ export class ProductServiceImplementation implements IProductService {
           longitude,
           latitude,
         });
-        conditionParams.agent_id = agents.map(agent => agent.id);
+        if (agents) {
+          conditionParams.agent_id = agents.map(agent => agent.id);
+        }
       }
       if (condition.agent_id) {
         const agent = await this.agentService.getAgentDetails(condition.agent_id);
@@ -299,7 +301,9 @@ export class ProductServiceImplementation implements IProductService {
           conditionParams.is_insurance_product = true;
         }
       }
-      return this.productRepository.countByCondition(conditionParams);
+      return this.productRepository.countByCondition(
+        conditionParams,
+        condition.name?.toString().split(' '),);
     } catch (error) {
       throw error;
     }
@@ -662,9 +666,9 @@ export class ProductServiceImplementation implements IProductService {
         if (errors.length > 0) {
           errors.map(
             (err) =>
-              (errorMessages = errorMessages.concat(
-                Object.values(err.constraints),
-              )),
+            (errorMessages = errorMessages.concat(
+              Object.values(err.constraints),
+            )),
           );
           errorRows.push({ row: rowIdx, errors: errorMessages });
         }
@@ -783,7 +787,7 @@ export class ProductServiceImplementation implements IProductService {
     try {
       const { limit, page, ...rest } = filterProductDto;
       const condition = this.buildSearchQueryCondition(rest);
-      return this.productRepository.findAllByConditionV2(limit, (page -1) * limit, condition);
+      return this.productRepository.findAllByConditionV2(limit, (page - 1) * limit, condition);
     } catch (error) {
       throw error;
     }
@@ -915,8 +919,8 @@ export class ProductServiceImplementation implements IProductService {
         variantCondition: {
           is_deleted: false,
           price: {
-            ...(condition.min_price && {[Op.gte]: condition.min_price}),
-            ...(condition.max_price && {[Op.lte]: condition.max_price}),
+            ...(condition.min_price && { [Op.gte]: condition.min_price }),
+            ...(condition.max_price && { [Op.lte]: condition.max_price }),
           },
         },
       }

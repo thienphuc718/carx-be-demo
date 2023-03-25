@@ -62,7 +62,7 @@ export class SectionModel extends Model<SectionModel> {
   is_item_editable: boolean;
 
   @Column({
-     type: DataType.STRING,
+    type: DataType.STRING,
   })
   mobile_screen: string;
 
@@ -77,6 +77,12 @@ export class SectionModel extends Model<SectionModel> {
     defaultValue: true,
   })
   is_enabled: boolean;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  isnoticeable: boolean;
 
   @CreatedAt
   created_at: Date;

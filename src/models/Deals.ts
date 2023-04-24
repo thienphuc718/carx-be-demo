@@ -76,6 +76,7 @@ export class DealModel extends Model<DealModel> {
   transformToResponse() {
     const { product, converted_title, tsv_converted_title, ...dealInfo } = JSON.parse(JSON.stringify(this));
     const data = {
+      type: product.type,
       ...dealInfo,
     };
     if (product && product.name) {

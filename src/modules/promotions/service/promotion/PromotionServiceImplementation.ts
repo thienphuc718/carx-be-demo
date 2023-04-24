@@ -29,8 +29,8 @@ import { generateRandomCode } from '../../helper/PromotionCodeHelper';
 import {
   ISectionPromotionRelationService
 } from "../../../sections/section-promotion-relation/service/SectionPromotionRelationServiceInterface";
-import {removeVietnameseTones} from "../../../../helpers/stringHelper";
-import {utcToZonedTime, zonedTimeToUtc} from "date-fns-tz";
+import { removeVietnameseTones } from "../../../../helpers/stringHelper";
+import { utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
 
 
 export class PromotionServiceImplementation implements IPromotionService {
@@ -41,7 +41,7 @@ export class PromotionServiceImplementation implements IPromotionService {
     private agentService: IAgentService,
     @Inject(forwardRef(() => ISectionPromotionRelationService))
     private sectionPromotionService: ISectionPromotionRelationService,
-  ) {}
+  ) { }
 
   async getPromotionList(
     payload: FilterPromotionDto,
@@ -98,7 +98,7 @@ export class PromotionServiceImplementation implements IPromotionService {
       } else {
         const _endDateZone = utcToZonedTime(new Date(), 'Asia/Ho_Chi_Minh')
         const _endDateUtc = zonedTimeToUtc(endOfDay(_endDateZone), 'Asia/Ho_Chi_Minh')
-        endDate = add(_endDateUtc, {years: 100})
+        endDate = add(_endDateUtc, { years: 100 })
       }
       this.validatePromotionDate(startDate, endDate);
       const newPromotionCode = generateRandomCode();
@@ -114,7 +114,7 @@ export class PromotionServiceImplementation implements IPromotionService {
         type: PromotionTypeEnum.DISCOUNT_VOUCHER,
         discount_type: PromotionDiscountTypeEnum[payload.discount_type],
         code: newPromotionCode,
-        status: this.isPromotionStartToday(startDate)
+        status: this.isCurrentDayInRange(startDate, endDate)
           ? PromotionStatusEnum.ACTIVATING
           : PromotionStatusEnum.CREATED,
         provider: payload.agent_id
@@ -178,7 +178,7 @@ export class PromotionServiceImplementation implements IPromotionService {
           startDate = startOfDay(new Date(payload.start_date));
         } else {
           startDate = promotion.start_date;
-        } 
+        }
         if (payload.end_date) {
           endDate = endOfDay(new Date(payload.end_date));
         } else {
@@ -188,7 +188,7 @@ export class PromotionServiceImplementation implements IPromotionService {
       }
       const params: Record<string, any> = {
         ...payload,
-        status: this.isPromotionStartToday(startDate)
+        status: this.isCurrentDayInRange(startDate, endDate)
           ? PromotionStatusEnum.ACTIVATING
           : PromotionStatusEnum.CREATED,
         start_date: startDate,
@@ -196,7 +196,7 @@ export class PromotionServiceImplementation implements IPromotionService {
         discount_type: PromotionDiscountTypeEnum[payload.discount_type],
       }
       if (payload.name) {
-        params.converted_name =removeVietnameseTones(payload.name).split(' ').filter(item => item !== "").join(' ');
+        params.converted_name = removeVietnameseTones(payload.name).split(' ').filter(item => item !== "").join(' ');
       }
       const updatedPromotion = await this.promotionRepository.update(
         promotion.id,
@@ -298,6 +298,7 @@ export class PromotionServiceImplementation implements IPromotionService {
 
   private validatePromotionDate(startDate: Date, endDate: Date): void {
     const todayZoned = utcToZonedTime(new Date(), 'Asia/Ho_Chi_Minh');
+    const today = new Date();
     const start = zonedTimeToUtc(startOfDay(todayZoned), 'Asia/Ho_Chi_Minh');
     const diffInHoursWithStartDateAndTodayStartDate = differenceInHours(
       startDate,
@@ -307,10 +308,22 @@ export class PromotionServiceImplementation implements IPromotionService {
       endDate,
       startDate,
     );
-    if (diffInHoursWithStartDateAndTodayStartDate < 0) {
-      throw new Error(
-        'Cannot create or update promotion with start_date in the past',
-      );
+    // if (today < endDate) {
+    //   console.log(today, endDate)
+    //   throw new Error(
+    //     'Không thể kết thúc trước ' + today,
+    //   );
+    // }
+    function hasPassedEndDate(endDate) {
+      const today = new Date();
+      if (today > endDate) {
+        return true;
+      }
+      return false;
+    }
+
+    if (hasPassedEndDate(endDate)) {
+      throw new Error('Ngày kết thúc không thể ở trong quá khứ');
     }
     if (diffInMillisecondsWithStartDateAndEndDate < 0) {
       throw new Error('end_date cannot before start_date');
@@ -330,5 +343,13 @@ export class PromotionServiceImplementation implements IPromotionService {
       diffInHoursWithStartDateAndTodayStartDate >= 0 &&
       diffInHoursWithStartDateAndTodayStartDate < 24
     );
+  }
+
+  private isCurrentDayInRange(startDate, endDate) {
+    const today = new Date();
+    console.log(startDate, today, endDate)
+    const startOfDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    const endOfDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999);
+    return startOfDay <= today && endOfDay >= today;
   }
 }

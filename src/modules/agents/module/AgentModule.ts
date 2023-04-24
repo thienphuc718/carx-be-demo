@@ -18,9 +18,10 @@ import { ForbiddenKeywordModule } from '../../forbidden-keywords/module/Forbidde
 import { AgentCategoryModule } from '../../agent-categories/module/AgentCategoryModule';
 import { ServiceModule } from '../../services/module/ServiceModule';
 import { ProductModule } from '../../products/module';
-import {ServiceCategoryModule} from "../../services/module/ServiceCategoryModule";
+import { ServiceCategoryModule } from "../../services/module/ServiceCategoryModule";
 import { SectionAgentRelationModule } from "../../sections/section-agent-relation/module/SectionAgentRelationModule";
 import { SectionProductRelationModule } from "../../sections/section-product-relation/module/SectionProductRelationModule";
+import { PromotionModule } from '../../promotions/module/PromotionModule';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { SectionProductRelationModule } from "../../sections/section-product-rel
     forwardRef(() => AgentCategoryModule),
     ServiceModule,
     ProductModule,
+    PromotionModule,
     ServiceCategoryModule,
     forwardRef(() => SectionAgentRelationModule),
     SectionProductRelationModule,
@@ -54,4 +56,4 @@ import { SectionProductRelationModule } from "../../sections/section-product-rel
   controllers: [AgentController],
   exports: [IAgentRepository, IAgentService],
 })
-export class AgentModule {}
+export class AgentModule { }

@@ -14,7 +14,7 @@ import { IUserService } from '../../users/service/UserServiceInterface';
 import { ISmsService } from '../../sms/service/SmsServiceInterface';
 import { ICallService } from '../../call/service/CallServiceInterface';
 import { generateRandomOtpCode } from '../../../helpers/otpHelper';
-import { IOtpService } from "../../otp/service/OtpServiceInterface";
+import {IOtpService} from "../../otp/service/OtpServiceInterface";
 import { add } from "date-fns";
 
 export class AuthServicePhoneNumberOtp {
@@ -51,14 +51,10 @@ export class AuthServicePhoneNumberOtp {
       // TODO: using call service temporarily
       // const isSent = await this.smsService.send(data.phone_number, `Ma xac thuc cua ban la: ${otp}`);
       // this.callService.call(data.phone_number, `Mã xác thực của bạn là: ${otp.split("").join("  ")}`);
-
-      // Enable this when deploy
-      // const isOtpSent = await this.otpServie.sendOtpViaPhoneNumber(data.phone_number, otp);
-      // if (!isOtpSent) {
-      //   throw new Error('Cannot send OTP code, service is currently under maintenance')
-
-      // }
-
+      const isOtpSent = await this.otpServie.sendOtpViaPhoneNumber(data.phone_number, otp);
+      if (!isOtpSent) {
+        throw new Error('Cannot send OTP code, service is currently under maintenance')
+      }
       await this.userService.updateUser(user.id, { otp, otp_expiry_time: add(new Date(), { minutes: 5 }) }, schema);
       return true;
     } catch (error) {
@@ -81,13 +77,10 @@ export class AuthServicePhoneNumberOtp {
         if (user) {
           const otp = generateRandomOtpCode();
           // this.callService.call(data.phone_number, `Mã xác thực của bạn là: ${otp.split("").join("  ")}`);
-
-          // Enable this when deploy
-          // const isOtpSent = await this.otpServie.sendOtpViaPhoneNumber(data.phone_number, otp);
-          // if (!isOtpSent) {
-          //   throw new Error('Cannot send OTP code, service is currently under maintenance')
-          // }
-
+          const isOtpSent = await this.otpServie.sendOtpViaPhoneNumber(data.phone_number, otp);
+          if (!isOtpSent) {
+            throw new Error('Cannot send OTP code, service is currently under maintenance')
+          }
           await this.userService.updateUser(user.id, { otp, otp_expiry_time: add(new Date(), { minutes: 5 }) }, schema);
           return { message: "Please verify your SMS OTP" }
         } else {
@@ -131,15 +124,12 @@ export class AuthServicePhoneNumberOtp {
       const existedUser = await this.userService.getUserByCondition({
         phone_number: data.phone_number
       }, schema);
-
-      // Enable this when deploy
-      // if (!existedUser) {
-      //   throw new Error('User does not exist');
-      // }
-      // if (existedUser.otp != data.otp) {
-      //   throw new Error('SMS OTP is not correct');
-      // }
-
+      if (!existedUser) {
+        throw new Error('User does not exist');
+      }
+      if (existedUser.otp != data.otp) {
+        throw new Error('SMS OTP is not correct');
+      }
       // TODO: hard code for test schema
       existedUser.schema = 'public';
       const token: string = generateJwtToken(getJwtPayload(existedUser));

@@ -45,7 +45,7 @@ export class ServiceServiceImplementation implements IServiceService {
     @Inject(AppGateway) private appGateway: AppGateway,
     @Inject(forwardRef(() => IAgentService))
     private agentService: IAgentService,
-  ) { }
+  ) {}
 
   async getServiceList(payload: FilterServiceDto): Promise<ServiceModel[]> {
     try {
@@ -80,7 +80,7 @@ export class ServiceServiceImplementation implements IServiceService {
           await this.serviceCategoryRelationService.getServiceCategoryRelationListByConditionWithoutPagination(
             { category_id: category_id }
           );
-        condition.id = uniqBy(relations, 'service_id').map(item => item.service_id);
+          condition.id = uniqBy(relations, 'service_id').map(item => item.service_id);
       }
       return this.serviceRepository.findAllByCondition(
         limit || undefined,
@@ -199,8 +199,8 @@ export class ServiceServiceImplementation implements IServiceService {
             agent_category_id: agent.category_id,
             converted_name: payload.name
               ? removeVietnameseTones(payload.name)
-                .split(' ')
-                .filter((item) => item !== '').join(' ')
+                  .split(' ')
+                  .filter((item) => item !== '').join(' ')
               : '',
           },
           transaction,
@@ -579,9 +579,9 @@ export class ServiceServiceImplementation implements IServiceService {
         if (errors.length > 0) {
           errors.map(
             (err) =>
-            (errorMessages = errorMessages.concat(
-              Object.values(err.constraints),
-            )),
+              (errorMessages = errorMessages.concat(
+                Object.values(err.constraints),
+              )),
           );
         }
 
@@ -678,8 +678,8 @@ export class ServiceServiceImplementation implements IServiceService {
         variantCondition: {
           is_deleted: false,
           price: {
-            ...(condition.min_price && { [Op.gte]: condition.min_price }),
-            ...(condition.max_price && { [Op.lte]: condition.max_price }),
+            ...(condition.min_price && {[Op.gte]: condition.min_price}),
+            ...(condition.max_price && {[Op.lte]: condition.max_price}),
           },
         },
       }

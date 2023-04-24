@@ -1,10 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 import * as twilio from 'twilio';
 import { VietnamCarriersEnum } from '../enum/OtpEnum';
 import { IOtpService } from './OtpServiceInterface';
-import { ICurlService } from "../../curl/service/CurlServiceInterface";
-import { getTemplateString } from "../../../helpers/stringHelper";
-import { SmsCallbackQueryDto } from "../dto/OtpDto";
+import {ICurlService} from "../../curl/service/CurlServiceInterface";
+import {getTemplateString} from "../../../helpers/stringHelper";
+import {SmsCallbackQueryDto} from "../dto/OtpDto";
 
 @Injectable()
 export class OtpServiceImplement implements IOtpService {
@@ -63,20 +63,19 @@ export class OtpServiceImplement implements IOtpService {
         processedPhoneNumber = countryCode + phoneNumber
       }
       const message = getTemplateString(phoneNumber, otp);
-      // const { data } = await this.curlService.sendPostRequestWithCustomHeader({
-      //   url: `${process.env.STEL_API_URL}`,
-      //   data: {
-      //     from: 'CarX',
-      //     to: processedPhoneNumber,
-      //     text: message,
-      //   },
-      //   header: {
-      //     Authorization: `Basic ${process.env.STEL_API_KEY}`
-      //   }
-      // });
-      // console.log(data);
-      // return data.status === 1;
-      return true
+      const { data } = await this.curlService.sendPostRequestWithCustomHeader({
+        url: `${process.env.STEL_API_URL}`,
+        data: {
+          from: 'CarX',
+          to: processedPhoneNumber,
+          text: message,
+        },
+        header: {
+          Authorization: `Basic ${process.env.STEL_API_KEY}`
+        }
+      });
+      console.log(data);
+      return data.status === 1;
     } catch (error) {
       console.log(error);
       throw error;

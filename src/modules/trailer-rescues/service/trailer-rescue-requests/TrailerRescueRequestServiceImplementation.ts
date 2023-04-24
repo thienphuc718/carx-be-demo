@@ -29,12 +29,11 @@ import { ITrailerRescueRequestService } from './TrailerRescueRequestServiceInter
 import { TrailerLaterRescueResponseStatusEnum } from '../../enum/TrailerLaterRescueResponseEnum';
 import { IAgentService } from '../../../agents/service/AgentServiceInterface';
 import { IAgentCategoryService } from '../../../agent-categories/service/AgentCategoryServiceInterface';
-import {IBookingService} from "../../../bookings/service/BookingServiceInterface";
-import {EventEmitter2} from "@nestjs/event-emitter";
+import { IBookingService } from "../../../bookings/service/BookingServiceInterface";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 export class TrailerRescueRequestServiceImplementation
-  implements ITrailerRescueRequestService
-{
+  implements ITrailerRescueRequestService {
   constructor(
     @Inject(ITrailerRescueRequestRepository)
     private trailerRescueRequestRepository: ITrailerRescueRequestRepository,
@@ -51,7 +50,7 @@ export class TrailerRescueRequestServiceImplementation
     private agentCategoryService: IAgentCategoryService,
     @Inject(forwardRef(() => IBookingService)) private bookingService: IBookingService,
     private eventEmitter: EventEmitter2,
-  ) {}
+  ) { }
 
   async createTrailerRescueRequest(
     payload: CreateTrailerRescueRequestDto,
@@ -75,6 +74,9 @@ export class TrailerRescueRequestServiceImplementation
           trailerRescueRequestId: newTrailerRescueRequest.id,
           customerInfo: customer.full_name || customer.phone_number,
           image: customer.avatar || null,
+          distance: 70,
+          longitude: payload.customer_info.current_location_geo.geometry.location.lng,
+          latitude: payload.customer_info.current_location_geo.geometry.location.lat
         });
         this.appGateway.server.emit('SEND_TRAILER_RESCUE_REQUEST', {
           action: 'SEND_TRAILER_RESCUE_REQUEST',
@@ -191,7 +193,7 @@ export class TrailerRescueRequestServiceImplementation
         payload.former_agent_id &&
         payload.former_booking_id &&
         payload.former_status ===
-          TrailerRescueRequestFormerStatusEnum.PROCESSING
+        TrailerRescueRequestFormerStatusEnum.PROCESSING
       ) {
         agent = await this.agentService.getAgentDetails(
           payload.former_agent_id,
@@ -209,10 +211,9 @@ export class TrailerRescueRequestServiceImplementation
         await this.notificationService.createUserInAppAndPushNotification(
           {
             userId: agent.user_id,
-            message: `Khách hàng ${
-              trailerRescueRequest.customer.full_name ||
+            message: `Khách hàng ${trailerRescueRequest.customer.full_name ||
               trailerRescueRequest.customer.phone_number
-            } đã chọn dịch vụ kéo xe cứu hộ của bạn`,
+              } đã chọn dịch vụ kéo xe cứu hộ của bạn`,
             heading: `Yêu cầu kéo xe cứu hộ`,
             targetGroup: NotificationSegmentEnum.AGENT,
             data: { trailer_rescue_request_id: trailerRescueRequest.id, flag: NotificationRescueFlagEnum.TRAILER_FORMER },
@@ -245,10 +246,9 @@ export class TrailerRescueRequestServiceImplementation
         await this.notificationService.createUserInAppAndPushNotification(
           {
             userId: agent.user_id,
-            message: `Khách hàng ${
-              trailerRescueRequest.customer.full_name ||
+            message: `Khách hàng ${trailerRescueRequest.customer.full_name ||
               trailerRescueRequest.customer.phone_number
-            } đã chọn dịch vụ kéo xe cứu hộ của bạn`,
+              } đã chọn dịch vụ kéo xe cứu hộ của bạn`,
             heading: `Yêu cầu kéo xe cứu hộ`,
             targetGroup: NotificationSegmentEnum.AGENT,
             data: { trailer_rescue_request_id: trailerRescueRequest.id, flag: NotificationRescueFlagEnum.TRAILER_LATER },
@@ -266,9 +266,9 @@ export class TrailerRescueRequestServiceImplementation
       if (
         payload.former_status &&
         payload.former_status ===
-          TrailerRescueRequestFormerStatusEnum.COMPLETED &&
+        TrailerRescueRequestFormerStatusEnum.COMPLETED &&
         updatedTrailerRescueRequest.former_status ===
-          TrailerRescueRequestFormerStatusEnum.COMPLETED
+        TrailerRescueRequestFormerStatusEnum.COMPLETED
       ) {
         agent = await this.agentService.getAgentDetails(updatedTrailerRescueRequest.former_agent_id);
         if (!agent) {
@@ -306,9 +306,9 @@ export class TrailerRescueRequestServiceImplementation
       } else if (
         payload.later_status &&
         payload.later_status ===
-          TrailerRescueRequestLaterStatusEnum.COMPLETED &&
+        TrailerRescueRequestLaterStatusEnum.COMPLETED &&
         updatedTrailerRescueRequest.later_status ===
-          TrailerRescueRequestLaterStatusEnum.COMPLETED
+        TrailerRescueRequestLaterStatusEnum.COMPLETED
       ) {
         agent = await this.agentService.getAgentDetails(updatedTrailerRescueRequest.later_agent_id);
         if (!agent) {
@@ -347,9 +347,9 @@ export class TrailerRescueRequestServiceImplementation
       if (
         payload.former_status &&
         payload.former_status ===
-          TrailerRescueRequestFormerStatusEnum.CANCELLED &&
+        TrailerRescueRequestFormerStatusEnum.CANCELLED &&
         updatedTrailerRescueRequest.former_status ===
-          TrailerRescueRequestFormerStatusEnum.CANCELLED
+        TrailerRescueRequestFormerStatusEnum.CANCELLED
       ) {
         updatedTrailerRescueRequest.later_status =
           TrailerRescueRequestLaterStatusEnum.CANCELLED;

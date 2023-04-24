@@ -102,7 +102,7 @@ export class ServiceRepositoryImplementation implements IServiceRepository {
         {
           model: AgentModel,
           required: false,
-          attributes: ['id'],
+          attributes: ['id', 'longitude', 'latitude', 'address'],
         },
         {
           model: ServiceCategoryRelationModel,
@@ -171,7 +171,6 @@ export class ServiceRepositoryImplementation implements IServiceRepository {
       };
       delete service_condition.name;
     }
-    console.log(condition);
     return this.serviceModel.count({
       where: {
         ...service_condition,
@@ -214,7 +213,10 @@ export class ServiceRepositoryImplementation implements IServiceRepository {
   findById(id: string): Promise<ServiceModel> {
     return this.serviceModel.findOne({
       where: {
-        id: id,
+        [Op.or]: [
+          { id: id },
+          { product_id: id }
+        ]
       },
       include: [
         {

@@ -23,7 +23,7 @@ export class EventHandler {
     private notificationService: INotificationService,
     @Inject(IPushNotificationService)
     private pushNotificationService: IPushNotificationService,
-  ) {}
+  ) { }
 
   @OnEvent('EVENT_PRODUCT_BULK_IMPORT')
   async handleBulkImportProducts(payload: any) {
@@ -40,8 +40,15 @@ export class EventHandler {
   }
 
   @OnEvent('SEND_TRAILER_FORMER_RESCUE_REQUEST_NOTIFICATION')
-  async sendTrailerFormerRescueRequest(payload: { trailerRescueRequestId: string, customerInfo: string, image?: string }) {
-    const {trailerRescueRequestId, customerInfo, image} = payload;
+  async sendTrailerFormerRescueRequest(payload: {
+    trailerRescueRequestId: string,
+    customerInfo: string,
+    image?: string,
+    distance?: number,
+    longitude?: number,
+    latitude?: number
+  }) {
+    const { trailerRescueRequestId, customerInfo, image } = payload;
     const rescueServices = await this.serviceService.getServiceListByConditionWithoutPagination({
       is_deleted: false,
       name: 'Cứu hộ tại garage',
@@ -49,9 +56,12 @@ export class EventHandler {
       agent_category_id: '5530a10b-ffb8-43be-bb90-1d09c293cace',
     });
     let agentIds = rescueServices.map(service => service.agent_id);
-    const agents = await this.agentService.getAgentListWithoutPaging({
+    const agents = await this.agentService.getAgentListByDistanceWithoutPagination({
       is_hidden: false,
-      id: agentIds
+      id: agentIds,
+      distance: payload.distance,
+      longitude: payload.longitude,
+      latitude: payload.latitude,
     });
     let userIds = agents.map(item => item.user_id);
     if (userIds.length) {
@@ -106,7 +116,14 @@ export class EventHandler {
   }
 
   @OnEvent('SEND_ONSITE_RESCUE_REQUEST_NOTIFICATION')
-  async sendOnsiteRescueRequestNotification(payload: { onsiteRescueRequestId: string, customerInfo: string, image?: string }) {
+  async sendOnsiteRescueRequestNotification(payload: {
+    onsiteRescueRequestId: string,
+    customerInfo: string,
+    image?: string,
+    distance?: number,
+    longitude?: number,
+    latitude?: number
+  }) {
     const { onsiteRescueRequestId, customerInfo, image } = payload;
     const onsiteRescueService =
       await this.serviceService.getServiceListByConditionWithoutPagination({
@@ -115,10 +132,13 @@ export class EventHandler {
         is_rescue_service: true,
       });
     let agentIds = onsiteRescueService.map(service => service.agent_id);
-    const agents = await this.agentService.getAgentListWithoutPaging({
+    const agents = await this.agentService.getAgentListByDistanceWithoutPagination({
       is_hidden: false,
       id: agentIds,
       is_deleted: false,
+      distance: payload.distance,
+      longitude: payload.longitude,
+      latitude: payload.latitude,
     });
     let userIds = agents.map(item => item.user_id);
     if (userIds.length) {

@@ -229,7 +229,6 @@ export class AgentModel extends Model<AgentModel> {
       const {
         user_id,
         user_details,
-        is_deleted,
         created_at,
         updated_at,
         products,

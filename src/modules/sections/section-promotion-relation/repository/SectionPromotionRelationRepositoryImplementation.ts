@@ -7,11 +7,12 @@ import { SectionPromotionRelationQueryConditionType } from '../type/SectionPromo
 import { ISectionPromotionRelationRepository } from './SectionPromotionRelationRepositoryInterface';
 
 export class SectionPromotionRelationRepositoryImplementation
-  implements ISectionPromotionRelationRepository {
+  implements ISectionPromotionRelationRepository
+{
   constructor(
     @InjectModel(SectionPromotionRelationModel)
     private sectionPromotionRelationModel: typeof SectionPromotionRelationModel,
-  ) { }
+  ) {}
   findAllByCondition(
     condition: SectionPromotionRelationQueryConditionType,
   ): Promise<SectionPromotionRelationModel[]> {

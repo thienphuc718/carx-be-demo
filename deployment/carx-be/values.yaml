@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 5
+replicaCount: 1
 
 namespace: carx
 
@@ -54,10 +54,15 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-body-size: "128m"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/websocket-services: carx-be
+    nginx.org/websocket-services: carx-be
+    nginx.ingress.kubernetes.io/use-regex: "true"
   hosts:
     - host: api.carx.asia
       paths:
         - path: /
+          pathType: Prefix
+        - path: /socket.io/?(.*)
           pathType: Prefix
   tls:
     - hosts:
@@ -74,16 +79,17 @@ resources:
   #   memory: 128Mi
   requests:
     cpu: 500m
-    memory: 256Mi
+    memory: 1Gi
 
 autoscaling:
-  enabled: true
+  enabled: false
   minReplicas: 5
   maxReplicas: 10
   targetCPUUtilizationPercentage: 85
   targetMemoryUtilizationPercentage: 85
 
-nodeSelector: {}
+nodeSelector:
+  component: carx-be
 
 tolerations: []
 

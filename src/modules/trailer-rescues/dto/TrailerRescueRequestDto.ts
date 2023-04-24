@@ -105,10 +105,7 @@ export class FilterTrailerRescueRequestDto {
   later_status?: TrailerRescueRequestLaterStatusEnum;
 }
 
-export class CreateTrailerRescueRequestDto extends OmitType(
-  TrailerRescueRequestEntityDto,
-  [],
-) {
+export class CreateTrailerRescueRequestDto extends TrailerRescueRequestEntityDto {
   @IsNotEmpty()
   @IsUUID(4)
   customer_id: string;

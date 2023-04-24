@@ -23,8 +23,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { generatePassword } from '../../../helpers/passwordHelper';
 import { generateRandomOtpCode } from '../../../helpers/otpHelper';
 import { ICallService } from '../../call/service/CallServiceInterface';
-import { IOtpService } from "../../otp/service/OtpServiceInterface";
-import { add } from "date-fns";
+import {IOtpService} from "../../otp/service/OtpServiceInterface";
+import {add} from "date-fns";
 
 export class AuthServicePhoneNumberPassword {
   constructor(
@@ -34,7 +34,7 @@ export class AuthServicePhoneNumberPassword {
     private callService: ICallService,
     @Inject(IOtpService)
     private otpServie: IOtpService,
-  ) { }
+  ) {}
 
   async signUp(data: SignUpPhoneNumberPasswordDto, schema: string): Promise<UserModel> {
     try {

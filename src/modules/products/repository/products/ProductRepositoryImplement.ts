@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ProductModel, AgentModel } from '../../../../models';
+import { ProductModel, AgentModel,ServiceModel } from '../../../../models';
 import {
   CreateProductAttributeSelectedEntityDto,
   CreateProductCategorySelectedEntityDto,
@@ -91,17 +91,23 @@ export class ProductRepositoryImplementation implements IProductRepository {
       })
     }
     if (names) {
+      let filteredNames = names.map(name => `%${name.toLowerCase()}%`);
+      // if (names.length > 1) {
+      //   filteredNames = names.filter(name => name.length >= 2).sort((a, b) => b.length - a.length);
+      // }
       const products = await this.productModel.findAll({
         limit: limit,
         offset: offset,
         where: {
           ...productCondition,
           name: {
-            [Op.iLike]: { [Op.any]: names.map(name => `%${name}%`) },
+            [Op.and]: filteredNames.map(name => ({
+              [Op.iLike]: name
+            }))
           }
         },
         include: includeOptions
-      });
+      })
 
       // Calculate the match count for each product
       const matchedProducts = products.map(product => {
@@ -119,7 +125,6 @@ export class ProductRepositoryImplementation implements IProductRepository {
 
       return sortedProducts.map(({ product }) => product);
     }
-
     const products = await this.productModel.findAll({
       limit: limit,
       offset: offset,
@@ -130,6 +135,7 @@ export class ProductRepositoryImplementation implements IProductRepository {
       //     :
       //   [[order_by, order_type]],
     });
+
 
     return products
   }
@@ -185,15 +191,44 @@ export class ProductRepositoryImplementation implements IProductRepository {
     //   };
     //   delete productCondition.name;
     // }
+    if (names) {
+      let filteredNames = names.map(name => `%${name.toLowerCase()}%`);
+      return this.productModel.count({
+        where: {
+          ...productCondition,
+          is_deleted: false,
+          ...(names && {
+            name: {
+              [Op.and]: filteredNames.map(name => ({
+                [Op.iLike]: name
+              }))
+            },
+          }),
+        },
+        include: [
+          {
+            model: ProductVariantModel,
+            as: 'variants',
+            where: {
+              ...variantCondition,
+              is_deleted: false,
+            },
+          },
+          {
+            model: InsuranceProductModel,
+            as: 'insurance_product',
+            required: condition.is_insurance_product || false,
+            where: {
+              ...insuranceProductCondition,
+            }
+          }
+        ]
+      })
+    }
     return this.productModel.count({
       where: {
         ...productCondition,
         is_deleted: false,
-        ...(names && {
-          name: {
-            [Op.iLike]: { [Op.any]: names.map(name => `%${name}%`) },
-          },
-        }),
       },
       include: [
         {
@@ -214,6 +249,7 @@ export class ProductRepositoryImplementation implements IProductRepository {
         }
       ]
     })
+
   }
 
   findById(id: string): Promise<ProductModel> {
@@ -251,6 +287,11 @@ export class ProductRepositoryImplementation implements IProductRepository {
           model: ProductVariantModel,
           as: 'variants',
           where: { is_deleted: false },
+        },
+        {
+          model: ServiceModel,
+          as: 'services',
+          attributes: ['id'],
         },
         {
           model: ProductCategorySelectedModel,

@@ -27,11 +27,10 @@ import { IOnsiteRescueResponseService } from '../onsite-rescue-responses/OnsiteR
 import { IOnsiteRescueRequestService } from './OnsiteRescueRequestServiceInterface';
 import { IBookingService } from "../../../bookings/service/BookingServiceInterface";
 import { EventEmitter2 } from "@nestjs/event-emitter";
-import {IServiceService} from "../../../services/service/ServiceServiceInterface";
+import { IServiceService } from "../../../services/service/ServiceServiceInterface";
 
 export class OnsiteRescueRequestServiceImplementation
-  implements IOnsiteRescueRequestService
-{
+  implements IOnsiteRescueRequestService {
   constructor(
     @Inject(IOnsiteRescueRequestRepository)
     private onsiteRescueRequestRepository: IOnsiteRescueRequestRepository,
@@ -46,7 +45,7 @@ export class OnsiteRescueRequestServiceImplementation
     @Inject(IBookingService) private bookingService: IBookingService,
     private eventEmitter: EventEmitter2,
     @Inject(IServiceService) private serviceService: IServiceService,
-  ) {}
+  ) { }
 
   async createOnsiteRescueRequest(
     payload: CreateOnsiteRescueRequestDto,
@@ -89,6 +88,9 @@ export class OnsiteRescueRequestServiceImplementation
         onsiteRescueRequestId: newOnsiteRescueRequest.id,
         customerInfo: customer.full_name || customer.phone_number,
         image: customer.avatar ?? null,
+        distance: 70,
+        longitude: payload.customer_info.current_location_geo.geometry.location.lng,
+        latitude: payload.customer_info.current_location_geo.geometry.location.lat
       })
       return newOnsiteRescueRequest;
     } catch (error) {
@@ -187,9 +189,9 @@ export class OnsiteRescueRequestServiceImplementation
         ]);
       }
       if (
-          payload.status &&
-          payload.status === OnsiteRescueRequestStatusEnum.CANCELLED &&
-          onsiteRescueRequest.status === OnsiteRescueRequestStatusEnum.CANCELLED
+        payload.status &&
+        payload.status === OnsiteRescueRequestStatusEnum.CANCELLED &&
+        onsiteRescueRequest.status === OnsiteRescueRequestStatusEnum.CANCELLED
       ) {
         const onsiteRescueResponses = await this.onsiteRescueResponseService.getOnsiteRescueResponseByConditionWithoutPagination({
           onsite_rescue_request_id: onsiteRescueRequest.id,
@@ -262,7 +264,7 @@ export class OnsiteRescueRequestServiceImplementation
         if (nRequests < nResponses) {
           return 0;
         }
-      } 
+      }
       return nRequests - nResponses;
     } catch (error) {
       throw error;

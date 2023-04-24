@@ -16,8 +16,9 @@ import {
   ProductStatusEnum,
 } from '../../products/enum/ProductEnum';
 import { IProductService } from '../../products/service/products/ProductServiceInterface';
+import { IPromotionService } from '../../promotions/service/promotion/PromotionServiceInterface';
 import { IServiceCategoryService } from '../../services/service/service-categories/ServiceCategoryServiceInterface';
-import {removeVietnameseTones} from "../../../helpers/stringHelper";
+import { removeVietnameseTones } from "../../../helpers/stringHelper";
 import {
   ISectionAgentRelationService
 } from "../../sections/section-agent-relation/service/SectionAgentRelationServiceInterface";
@@ -38,13 +39,14 @@ export class AgentServiceImplementation implements IAgentService {
     private agentCategoryService: IAgentCategoryService,
     @Inject(IServiceService) private serviceService: IServiceService,
     @Inject(IProductService) private productService: IProductService,
+    @Inject(IPromotionService) private promotionService: IPromotionService,
     @Inject(IServiceCategoryService)
     private serviceCategoryService: IServiceCategoryService,
     @Inject(forwardRef(() => ISectionAgentRelationService))
     private sectionAgentService: ISectionAgentRelationService,
     @Inject(ISectionProductRelationService)
     private sectionProductService: ISectionProductRelationService,
-  ) {}
+  ) { }
 
   getAgentDetails(id: string): Promise<AgentModel> {
     try {
@@ -123,9 +125,9 @@ export class AgentServiceImplementation implements IAgentService {
         }
         if (category.id !== '65a347b9-3c84-4e23-9856-c7245d7bdffd' && category.id !== 'd619d1a1-9313-4e9b-8a50-dd176177f0de') {
           const products =
-              await this.productService.getProductListByConditionWithoutPagination({
-                agent_id: agent.id,
-              });
+            await this.productService.getProductListByConditionWithoutPagination({
+              agent_id: agent.id,
+            });
           const services = await this.serviceService.getServiceListByConditionWithoutPagination({
             agent_id: agent.id,
           });
@@ -383,18 +385,18 @@ export class AgentServiceImplementation implements IAgentService {
         is_activated: isActivated,
       });
       const products =
-          await this.productService.getProductListByConditionWithoutPagination({
-            agent_id: agent.id,
-          });
+        await this.productService.getProductListByConditionWithoutPagination({
+          agent_id: agent.id,
+        });
       if (nModified && products.length) {
         const productIds = products.map((product) => product.id);
         this.productService.updateProductByCondition(
-            { id: productIds },
-            {
-              status: !isActivated
-                  ? ProductStatusEnum.INACTIVE
-                  : ProductStatusEnum.ACTIVE,
-            },
+          { id: productIds },
+          {
+            status: !isActivated
+              ? ProductStatusEnum.INACTIVE
+              : ProductStatusEnum.ACTIVE,
+          },
         );
       }
       return !!nModified;
@@ -461,4 +463,52 @@ export class AgentServiceImplementation implements IAgentService {
       throw error;
     }
   }
+
+
+  async deleteAgent(
+    agentId: string,
+  ): Promise<boolean> {
+    try {
+      const agent = await this.getAgentDetails(agentId);
+      if (!agent) {
+        throw new Error('Agent not found');
+      }
+      const [nModified, _] = await this.agentRepository.update(agent.id, {
+        is_activated: false,
+        is_deleted: true,
+        is_hidden: true
+      });
+      const products =
+        await this.productService.getProductListByConditionWithoutPagination({
+          agent_id: agent.id,
+        });
+
+      const promotions =
+        await this.promotionService.getPromotionListByConditionWithoutPagination({
+          agent_id: agent.id,
+        });
+      if (nModified && products.length) {
+        if (products.length) {
+          const productIds = products.map((product) => product.id);
+          this.productService.updateProductByCondition(
+            { id: productIds },
+            {
+              status: ProductStatusEnum.INACTIVE
+
+            },
+          );
+        }
+        if (promotions.length) {
+          const promotionIds = promotions.map((promotion) => promotion.id);
+          this.promotionService.deleteMultiPromotions(promotionIds);
+        }
+      }
+      return !!nModified;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
+
+
+

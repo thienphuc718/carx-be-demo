@@ -10,7 +10,7 @@ export class DealRepositoryImplementation implements IDealRepository {
   constructor(
     @InjectModel(DealModel) private dealModel: typeof DealModel,
     private sequelize: Sequelize
-  ) {}
+  ) { }
   findOneByCondition(condition: any): Promise<DealModel> {
     return this.dealModel.findOne({
       where: {
@@ -25,7 +25,7 @@ export class DealRepositoryImplementation implements IDealRepository {
     offset: number,
     condition?: any,
   ): Promise<DealModel[]> {
-    let tsVectorSearchString =  null;
+    let tsVectorSearchString = null;
     if (condition.title) {
       tsVectorSearchString = getTextSearchString(condition.title);
       condition.tsv_converted_title = {
@@ -46,19 +46,19 @@ export class DealRepositoryImplementation implements IDealRepository {
           model: ProductModel,
           as: 'product',
           required: false,
-          attributes: ['name']
+          attributes: ['name', 'type']
         }
       ],
       order: [
         tsVectorSearchString ?
           this.sequelize.literal(`ts_rank(deals.tsv_converted_title, to_tsquery('${tsVectorSearchString}')) desc`)
-            :
+          :
           ['updated_at', 'desc']
       ],
     });
   }
   countByCondition(condition: any): Promise<number> {
-    let tsVectorSearchString =  null;
+    let tsVectorSearchString = null;
     if (condition.title) {
       tsVectorSearchString = getTextSearchString(condition.title);
       condition.tsv_converted_title = {

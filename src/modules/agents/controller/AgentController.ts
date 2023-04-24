@@ -286,6 +286,48 @@ export class AgentController extends BaseController {
     }
   }
 
+  @Put(':id/delete')
+  @ApiOperation({ summary: 'Delete Agent' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  async deleteAgent(
+    @Res() response: express.Response,
+    @Param('id') agentId: string,
+    @Req() request: express.Request,
+  ) {
+    try {
+      const isStaffUser = await this.isStaffUser(request.user.id);
+      if (!isStaffUser) {
+        throw new ForbiddenException({
+          statusCode: HttpStatus.FORBIDDEN,
+          message: 'User is not staff',
+        });
+      }
+      const isAgentHidden = await this.agentService.deleteAgent(
+        agentId,
+      );
+      let result = null;
+      if (!isAgentHidden) {
+        result = Result.fail({
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Failed to activate or deactivate agent',
+        });
+      } else {
+        result = Result.ok({
+          statusCode: HttpStatus.OK,
+          message: 'Successfully activate or deactivate agent',
+        });
+      }
+      return this.ok(response, result.value);
+    } catch (error) {
+      const err = Result.fail({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error.message,
+      });
+      return this.fail(response, err.error);
+    }
+  }
+
   private async isStaffUser(userId: string): Promise<boolean> {
     try {
       const user = await this.userService.getUserDetail(userId, 'public');

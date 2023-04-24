@@ -7,7 +7,7 @@ export class AuthServiceEmailOtp {
   constructor(
     @Inject(IUserService) private userService: IUserService,
     @Inject(IOtpService) private otpService: IOtpService,
-  ) { }
+  ) {}
 
   async requestOtp(data: RequestEmailOtpDto, schema: string): Promise<boolean> {
     try {
